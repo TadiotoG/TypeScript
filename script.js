@@ -42,6 +42,7 @@ var Ball = /** @class */ (function () {
     };
     Ball.prototype.detect_colision_betwen_objects = function (polygon) {
         var aux = false;
+        var angle = -1;
         for (var j = 0; j < polygon.dots.length; j++) {
             if (j === polygon.dots.length - 1) {
                 aux = this.detect_colision_with_edge(polygon.dots[j], polygon.dots[0]);
@@ -50,10 +51,25 @@ var Ball = /** @class */ (function () {
                 aux = this.detect_colision_with_edge(polygon.dots[j], polygon.dots[j + 1]);
             }
             if (aux == true) {
-                return true;
+                if (j === polygon.dots.length - 1) {
+                    angle = this.calculate_angle(polygon.dots[j], polygon.dots[0]);
+                }
+                else {
+                    angle = this.calculate_angle(polygon.dots[j], polygon.dots[j + 1]);
+                }
+                return angle;
             }
         }
-        return false;
+        return angle;
+    };
+    Ball.prototype.calculate_angle = function (A, B) {
+        var AB_x = B.x - A.x;
+        var AB_y = B.y - A.y;
+        var prod_escalar = this.vet_x * AB_x + (-this.vet_y) * AB_y; // Como a escala y é para baixo, logo, inverti o sinal...
+        var norma_AB = Math.sqrt((Math.pow(AB_x, 2) + Math.pow(AB_y, 2)));
+        var norma_vet_class = Math.sqrt((Math.pow(this.vet_x, 2) + Math.pow((-this.vet_y), 2)));
+        var result = prod_escalar / (norma_AB * norma_vet_class);
+        return Math.acos(result) * 180 / Math.PI;
     };
     Ball.prototype.detect_colision_with_edge = function (A, B) {
         var VectorABx = B.x - A.x;
@@ -70,7 +86,7 @@ var Ball = /** @class */ (function () {
         var Pprojx = (A.x + tx * VectorABx);
         var Pprojy = (A.y + tx * VectorABy);
         var distance = Math.sqrt(Math.pow((Pprojx - this.x), 2) + Math.pow((Pprojy - this.y), 2));
-        if (distance < this.radius) {
+        if (distance < this.radius + this.line_width / 2) {
             return true;
         }
         else {
@@ -86,11 +102,17 @@ var Universe = /** @class */ (function () {
             _this.ctx.fillStyle = "white";
             _this.ctx.fillRect(0, 0, canvas.width, canvas.height);
             for (var i = 0; i < _this.balls.length; i++) {
-                var colision_flag = false;
+                var colision_flag = -1;
                 for (var j = 0; j < _this.polygons.length; j++) {
                     colision_flag = _this.balls[i].detect_colision_betwen_objects(_this.polygons[j]);
-                    if (colision_flag) {
-                        _this.balls[i].vet_x = -_this.balls[i].vet_x;
+                    if (colision_flag != -1) {
+                        console.log("Olha aí: " + colision_flag);
+                        if (colision_flag < 90) {
+                            _this.balls[i].vet_y = -_this.balls[i].vet_y;
+                        }
+                        else {
+                            _this.balls[i].vet_x = -_this.balls[i].vet_x;
+                        }
                     }
                 }
                 // if(this.balls[i].detect_colision_with_edges)
@@ -104,9 +126,9 @@ var Universe = /** @class */ (function () {
         this.balls = [];
         this.polygons = [];
         var system_dot_0 = new Dot(0, 0);
-        var system_dot_1 = new Dot(width_limit, 0);
+        var system_dot_1 = new Dot(0, height_limit);
         var system_dot_2 = new Dot(width_limit, height_limit);
-        var system_dot_3 = new Dot(0, height_limit);
+        var system_dot_3 = new Dot(width_limit, 0);
         var array_aux = [];
         array_aux.push(system_dot_0);
         array_aux.push(system_dot_1);
@@ -133,10 +155,10 @@ canvas.width = 1000;
 canvas.height = 800;
 ctx.imageSmoothingEnabled = false;
 document.body.appendChild(canvas);
-var ball_1 = new Ball(100, 200, 200, 3, 1, 0, ctx);
-var ball_2 = new Ball(50, 200, 200, 3, 1, 0, ctx);
+var ball_1 = new Ball(100, 200, 200, 3, 1, 1, ctx);
+// var ball_2 = new Ball(50, 200, 200, 3, 1, 1, ctx);
 var uni = new Universe(ctx, canvas.width, canvas.height);
 ball_1.draw_it();
 uni.append_ball(ball_1);
-uni.append_ball(ball_2);
+// uni.append_ball(ball_2);
 uni.animate_world();

@@ -60,17 +60,36 @@ class Ball {
 
     detect_colision_betwen_objects(polygon: Polygon){
         let aux = false;
+        let angle = -1;
         for(let j = 0; j < polygon.dots.length; j++){
-            if ( j === polygon.dots.length-1){
+            if (j === polygon.dots.length-1){
                 aux = this.detect_colision_with_edge(polygon.dots[j], polygon.dots[0]);
             } else {
                 aux = this.detect_colision_with_edge(polygon.dots[j], polygon.dots[j+1]);
             }
             if(aux == true){
-                return true;
+                if (j === polygon.dots.length-1){
+                    angle = this.calculate_angle(polygon.dots[j], polygon.dots[0]);
+                } else {
+                    angle = this.calculate_angle(polygon.dots[j], polygon.dots[j+1]);
+                }
+                return angle;
             }
         }
-        return false;
+        return angle;
+    }
+
+    calculate_angle(A: Dot, B: Dot){
+        let AB_x = B.x - A.x;
+        let AB_y = B.y - A.y;
+
+        let prod_escalar = this.vet_x * AB_x + (- this.vet_y) * AB_y // Como a escala y é para baixo, logo, inverti o sinal...
+        let norma_AB = Math.sqrt((AB_x**2 + AB_y**2))
+        let norma_vet_class = Math.sqrt((this.vet_x**2 + (- this.vet_y)**2))
+
+        let result = prod_escalar / (norma_AB * norma_vet_class)
+        
+        return Math.acos(result) * 180 / Math.PI
     }
 
     detect_colision_with_edge(A: Dot, B: Dot){
@@ -92,7 +111,7 @@ class Ball {
         let Pprojy = (A.y + tx * VectorABy);
         let distance = Math.sqrt((Pprojx - this.x) ** 2 + (Pprojy - this.y) ** 2)
 
-        if (distance < this.radius){
+        if (distance < this.radius + this.line_width/2){
             return true;
         } else {
             return false;
@@ -110,9 +129,9 @@ class Universe {
         this.balls = [];
         this.polygons = [];
         let system_dot_0 = new Dot(0,0);
-        let system_dot_1 = new Dot(width_limit,0);
+        let system_dot_1 = new Dot(0,height_limit);
         let system_dot_2 = new Dot(width_limit,height_limit);
-        let system_dot_3 = new Dot(0,height_limit);
+        let system_dot_3 = new Dot(width_limit,0);
         let array_aux = [];
         array_aux.push(system_dot_0)
         array_aux.push(system_dot_1)
@@ -133,11 +152,16 @@ class Universe {
         this.ctx.fillStyle = "white";
         this.ctx.fillRect(0, 0, canvas.width, canvas.height);
         for(let i = 0; i < this.balls.length; i++){
-            let colision_flag = false;
+            let colision_flag = -1;
             for(let j = 0; j < this.polygons.length; j++){
                 colision_flag = this.balls[i].detect_colision_betwen_objects(this.polygons[j])
-                if(colision_flag) {
-                    this.balls[i].vet_x = -this.balls[i].vet_x;
+                if (colision_flag != -1) {
+                    console.log("Olha aí: " + colision_flag)
+                    if(colision_flag < 90) {
+                        this.balls[i].vet_y = -this.balls[i].vet_y;
+                    } else {
+                        this.balls[i].vet_x = -this.balls[i].vet_x;
+                    }
                 }
             }
             // if(this.balls[i].detect_colision_with_edges)
@@ -147,23 +171,6 @@ class Universe {
         }
         requestAnimationFrame(this.animate_world);
     }
-
-    // detect_colision2AllObjs(){
-    //     let aux = false;
-    //     for(let i = 0; i < this.balls.length; i++){
-    //         for(let j = 0; j < this.dots.length; j++){
-    //             if ( j === this.dots.length-1){
-    //                 aux = this.balls[i].detect_colision_with_edge(this.dots[j], this.dots[0]);
-    //             } else {
-    //                 aux = this.balls[i].detect_colision_with_edge(this.dots[j], this.dots[j+1]);
-    //             }
-    //             if(aux == true){
-    //                 return true
-    //             }
-    //         }
-    //     }
-    //     return aux;
-    // }
 }
 
 const canvas = document.createElement("canvas")
@@ -178,14 +185,14 @@ canvas.height = 800;
 ctx.imageSmoothingEnabled = false;
 document.body.appendChild(canvas);
 
-var ball_1 = new Ball(100, 200, 200, 3, 1, 0, ctx);
-var ball_2 = new Ball(50, 200, 200, 3, 1, 0, ctx);
+var ball_1 = new Ball(100, 200, 200, 3, 1, 1, ctx);
+// var ball_2 = new Ball(50, 200, 200, 3, 1, 1, ctx);
 
 let uni = new Universe(ctx, canvas.width, canvas.height);
 
 ball_1.draw_it();
 
 uni.append_ball(ball_1);
-uni.append_ball(ball_2);
+// uni.append_ball(ball_2);
 
 uni.animate_world();
