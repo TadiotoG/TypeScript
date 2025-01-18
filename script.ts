@@ -115,44 +115,6 @@ class Ball {
         return prod_vetorial >= 0 ? angle : 360 - angle;
     }
 
-    // calculate_angle(A: Dot, B: Dot){
-    //     let AB_x = B.x - A.x;
-    //     let AB_y = B.y - A.y;
-
-    //     let prod_escalar = this.vet_x * AB_x + (- this.vet_y) * AB_y // Como a escala y é para baixo, logo, inverti o sinal...
-    //     let norma_AB = Math.sqrt((AB_x**2 + AB_y**2))
-    //     let norma_vet_class = Math.sqrt((this.vet_x**2 + (- this.vet_y)**2))
-
-    //     let result = prod_escalar / (norma_AB * norma_vet_class)
-        
-    //     return Math.acos(result) * 180 / Math.PI
-    // }
-
-    // detect_colision_with_edge(A: Dot, B: Dot){
-    //     let VectorABx = B.x - A.x;
-    //     let VectorABy = B.y - A.y;    
-    //     let VectorACx = this.x - A.x;
-    //     let VectorACy = this.y - A.y;
-    
-    //     let tx = ((VectorABx * VectorACx) + (VectorABy * VectorACy)) / ((VectorABx * VectorABx) + (VectorABy * VectorABy));
-    
-    //     if (tx > 1){
-    //         tx = 1;
-    //      } else if (tx < 0) {
-    //         tx = 0;
-    //     }
-    
-    //     let Pprojx = (A.x + tx * VectorABx);
-    //     let Pprojy = (A.y + tx * VectorABy);
-    //     let distance = Math.sqrt((Pprojx - this.x) ** 2 + (Pprojy - this.y) ** 2)
-
-    //     if (distance < this.radius + this.line_width/2){
-    //         return true;
-    //     } else {
-    //         return false;
-    //     }
-    // }
-
     detect_colision_with_edge(A, B) {
         let VectorABx = B.x - A.x;
         let VectorABy = B.y - A.y;
