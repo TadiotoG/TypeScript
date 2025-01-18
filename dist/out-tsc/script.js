@@ -65,59 +65,33 @@ var Ball = /** @class */ (function () {
     Ball.prototype.calculate_angle = function (A, B) {
         var AB_x = B.x - A.x;
         var AB_y = B.y - A.y;
-        // Produto escalar
-        var prod_escalar = this.vet_x * AB_x + (-this.vet_y) * AB_y;
-        // Normas dos vetores
-        var norma_AB = Math.sqrt(Math.pow(AB_x, 2) + Math.pow(AB_y, 2));
-        var norma_vet_class = Math.sqrt(Math.pow(this.vet_x, 2) + Math.pow((-this.vet_y), 2));
-        // Ângulo (cos)
+        var prod_escalar = this.vet_x * AB_x + (-this.vet_y) * AB_y; // Como a escala y é para baixo, logo, inverti o sinal...
+        var norma_AB = Math.sqrt((Math.pow(AB_x, 2) + Math.pow(AB_y, 2)));
+        var norma_vet_class = Math.sqrt((Math.pow(this.vet_x, 2) + Math.pow((-this.vet_y), 2)));
         var result = prod_escalar / (norma_AB * norma_vet_class);
-        // Produto vetorial para determinar o sinal
-        var prod_vetorial = this.vet_x * AB_y - (-this.vet_y) * AB_x;
-        var angle = Math.acos(result) * 180 / Math.PI;
-        // Ajustar para ângulos no intervalo [0, 360)
-        return prod_vetorial >= 0 ? angle : 360 - angle;
+        return Math.acos(result) * 180 / Math.PI;
     };
-    // calculate_angle(A: Dot, B: Dot){
-    //     let AB_x = B.x - A.x;
-    //     let AB_y = B.y - A.y;
-    //     let prod_escalar = this.vet_x * AB_x + (- this.vet_y) * AB_y // Como a escala y é para baixo, logo, inverti o sinal...
-    //     let norma_AB = Math.sqrt((AB_x**2 + AB_y**2))
-    //     let norma_vet_class = Math.sqrt((this.vet_x**2 + (- this.vet_y)**2))
-    //     let result = prod_escalar / (norma_AB * norma_vet_class)
-    //     return Math.acos(result) * 180 / Math.PI
-    // }
-    // detect_colision_with_edge(A: Dot, B: Dot){
-    //     let VectorABx = B.x - A.x;
-    //     let VectorABy = B.y - A.y;    
-    //     let VectorACx = this.x - A.x;
-    //     let VectorACy = this.y - A.y;
-    //     let tx = ((VectorABx * VectorACx) + (VectorABy * VectorACy)) / ((VectorABx * VectorABx) + (VectorABy * VectorABy));
-    //     if (tx > 1){
-    //         tx = 1;
-    //      } else if (tx < 0) {
-    //         tx = 0;
-    //     }
-    //     let Pprojx = (A.x + tx * VectorABx);
-    //     let Pprojy = (A.y + tx * VectorABy);
-    //     let distance = Math.sqrt((Pprojx - this.x) ** 2 + (Pprojy - this.y) ** 2)
-    //     if (distance < this.radius + this.line_width/2){
-    //         return true;
-    //     } else {
-    //         return false;
-    //     }
-    // }
     Ball.prototype.detect_colision_with_edge = function (A, B) {
         var VectorABx = B.x - A.x;
         var VectorABy = B.y - A.y;
         var VectorACx = this.x - A.x;
         var VectorACy = this.y - A.y;
-        var tx = ((VectorABx * VectorACx) + (VectorABy * VectorACy)) / ((Math.pow(VectorABx, 2)) + (Math.pow(VectorABy, 2)));
-        tx = Math.max(0, Math.min(1, tx)); // Garantir que tx esteja no intervalo [0, 1]
-        var Pprojx = A.x + tx * VectorABx;
-        var Pprojy = A.y + tx * VectorABy;
+        var tx = ((VectorABx * VectorACx) + (VectorABy * VectorACy)) / ((VectorABx * VectorABx) + (VectorABy * VectorABy));
+        if (tx > 1) {
+            tx = 1;
+        }
+        else if (tx < 0) {
+            tx = 0;
+        }
+        var Pprojx = (A.x + tx * VectorABx);
+        var Pprojy = (A.y + tx * VectorABy);
         var distance = Math.sqrt(Math.pow((Pprojx - this.x), 2) + Math.pow((Pprojy - this.y), 2));
-        return distance < this.radius + this.line_width / 2;
+        if (distance < this.radius + this.line_width / 2) {
+            return true;
+        }
+        else {
+            return false;
+        }
     };
     return Ball;
 }());
@@ -133,15 +107,11 @@ var Universe = /** @class */ (function () {
                     colision_flag = _this.balls[i].detect_colision_betwen_objects(_this.polygons[j]);
                     if (colision_flag != -1) {
                         console.log("Olha aí: " + colision_flag);
-                        if (colision_flag !== -1) {
-                            if ((colision_flag >= 0 && colision_flag <= 90) || (colision_flag > 270 && colision_flag < 360)) {
-                                // Rebate vertical
-                                _this.balls[i].vet_y = -_this.balls[i].vet_y;
-                            }
-                            else {
-                                // Rebate horizontal
-                                _this.balls[i].vet_x = -_this.balls[i].vet_x;
-                            }
+                        if (colision_flag < 90) {
+                            _this.balls[i].vet_y = -_this.balls[i].vet_y;
+                        }
+                        else {
+                            _this.balls[i].vet_x = -_this.balls[i].vet_x;
                         }
                     }
                 }
@@ -192,3 +162,4 @@ ball_1.draw_it();
 uni.append_ball(ball_1);
 // uni.append_ball(ball_2);
 uni.animate_world();
+//# sourceMappingURL=script.js.map
