@@ -218,11 +218,8 @@ uni.append_ball(ball_1);
 
 uni.animate_world();
 
-function print_something(){
-    console.log("Something!")
-}
 
-function EXCLUIR_ESSA_FUNCAO(){
-    // EXCLUIIIII
-    return true;
+function Crazy_stuff(){
+    console.log("Crazy stuff");
+    
 }
