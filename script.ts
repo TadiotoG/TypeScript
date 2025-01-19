@@ -217,3 +217,7 @@ uni.append_ball(ball_1);
 // uni.append_ball(ball_2);
 
 uni.animate_world();
+
+function print_something(){
+    console.log("Something!")
+}
