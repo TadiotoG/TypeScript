@@ -115,44 +115,6 @@ class Ball {
         return prod_vetorial >= 0 ? angle : 360 - angle;
     }
 
-    // calculate_angle(A: Dot, B: Dot){
-    //     let AB_x = B.x - A.x;
-    //     let AB_y = B.y - A.y;
-
-    //     let prod_escalar = this.vet_x * AB_x + (- this.vet_y) * AB_y // Como a escala y é para baixo, logo, inverti o sinal...
-    //     let norma_AB = Math.sqrt((AB_x**2 + AB_y**2))
-    //     let norma_vet_class = Math.sqrt((this.vet_x**2 + (- this.vet_y)**2))
-
-    //     let result = prod_escalar / (norma_AB * norma_vet_class)
-        
-    //     return Math.acos(result) * 180 / Math.PI
-    // }
-
-    // detect_colision_with_edge(A: Dot, B: Dot){
-    //     let VectorABx = B.x - A.x;
-    //     let VectorABy = B.y - A.y;    
-    //     let VectorACx = this.x - A.x;
-    //     let VectorACy = this.y - A.y;
-    
-    //     let tx = ((VectorABx * VectorACx) + (VectorABy * VectorACy)) / ((VectorABx * VectorABx) + (VectorABy * VectorABy));
-    
-    //     if (tx > 1){
-    //         tx = 1;
-    //      } else if (tx < 0) {
-    //         tx = 0;
-    //     }
-    
-    //     let Pprojx = (A.x + tx * VectorABx);
-    //     let Pprojy = (A.y + tx * VectorABy);
-    //     let distance = Math.sqrt((Pprojx - this.x) ** 2 + (Pprojy - this.y) ** 2)
-
-    //     if (distance < this.radius + this.line_width/2){
-    //         return true;
-    //     } else {
-    //         return false;
-    //     }
-    // }
-
     detect_colision_with_edge(A, B) {
         let VectorABx = B.x - A.x;
         let VectorABy = B.y - A.y;
@@ -171,6 +133,44 @@ class Ball {
         return distance < this.radius + this.line_width / 2;
     }
     
+    verify_all_walls(p: Polygon){
+        for(let j = 0; j < p.dots.length; j++){
+            if (j === p.dots.length-1){
+                this.updateDiagonalCollision(p.dots[j], p.dots[0]);
+            } else {
+                this.updateDiagonalCollision(p.dots[j], p.dots[j+1]);
+            }
+        }
+    }
+
+    updateDiagonalCollision(wallStart: Dot, wallEnd: Dot){
+        // Vetor da parede
+        const wallVector = {
+          x: wallEnd.x - wallStart.x,
+          y: wallEnd.y - wallStart.y,
+        };
+    
+        // Vetor normal à parede
+        const normal = {
+          x: -wallVector.y,
+          y: wallVector.x,
+        };
+    
+        // Normalizando o vetor normal
+        const normalLength = Math.sqrt(normal.x ** 2 + normal.y ** 2);
+        const normalUnit = {
+          x: normal.x / normalLength,
+          y: normal.y / normalLength,
+        };
+    
+        // Produto escalar entre velocidade e normal
+        const dotProduct = this.vet_x * normalUnit.x + this.vet_y * normalUnit.y;
+    
+        // Calculando nova velocidade
+        this.vet_x = this.vet_x - 2 * dotProduct * normalUnit.x;
+        this.vet_y = this.vet_y - 2 * dotProduct * normalUnit.y;
+      }
+
 }
 
 class Universe {
@@ -206,29 +206,12 @@ class Universe {
         this.ctx.fillStyle = "white";
         this.ctx.fillRect(0, 0, canvas.width, canvas.height);
         for(let i = 0; i < this.balls.length; i++){
-            let colision_flag = -1;
             for(let j = 0; j < this.polygons.length; j++){
-                colision_flag = this.balls[i].detect_colision_betwen_objects(this.polygons[j])
-                if (colision_flag != -1) {
-                    console.log("Olha aí: " + colision_flag)
-                    if (colision_flag !== -1) {
-                        if ((colision_flag >= 0 && colision_flag <= 90) || (colision_flag > 270 && colision_flag < 360)) {
-                            // Rebate vertical
-                            this.balls[i].vet_y = -this.balls[i].vet_y;
-                        } else {
-                            // Rebate horizontal
-                            this.balls[i].vet_x = -this.balls[i].vet_x;
-                        }
-                    }
-                    
+                this.balls[i].verify_all_walls(this.polygons[j])   
                 }
             }
-            // if(this.balls[i].detect_colision_with_edges)
-            let old_x = this.balls[i].x;
-            let old_y = this.balls[i].y;
-            this.balls[i].update_position(old_x+this.balls[i].vet_x, old_y+this.balls[i].vet_y);
-        }
         requestAnimationFrame(this.animate_world);
+        console.log("x = " + this.balls[0].x + "   y = " + this.balls[0].x)
     }
 }
 
@@ -244,7 +227,7 @@ canvas.height = 800;
 ctx.imageSmoothingEnabled = false;
 document.body.appendChild(canvas);
 
-var ball_1 = new Ball(20, 400, 200, 3, -1, -1, ctx);
+var ball_1 = new Ball(20, 400, 200, 3, 2, 3, ctx);
 // var ball_2 = new Ball(50, 200, 200, 3, 1, 1, ctx);
 
 let uni = new Universe(ctx, canvas.width, canvas.height);
