@@ -62,6 +62,16 @@ var Ball = /** @class */ (function () {
         }
         return angle;
     };
+    Ball.prototype.get_normal_vector = function (A, B) {
+        var AB_x = B.x - A.x;
+        var AB_y = B.y - A.y;
+        // Vetor normal (perpendicular)
+        var normal_x = -AB_y;
+        var normal_y = AB_x;
+        // Normalizar o vetor
+        var magnitude = Math.sqrt(Math.pow(normal_x, 2) + Math.pow(normal_y, 2));
+        return { x: normal_x / magnitude, y: normal_y / magnitude };
+    };
     Ball.prototype.calculate_angle = function (A, B) {
         var AB_x = B.x - A.x;
         var AB_y = B.y - A.y;
