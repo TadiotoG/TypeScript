@@ -196,3 +196,9 @@ uni.append_ball(ball_1);
 // uni.append_ball(ball_2);
 
 uni.animate_world();
+
+
+function Crazy_stuff(){
+    console.log("Crazy stuff");
+    
+}
