@@ -17,6 +17,35 @@ class Polygon{
         this.dots = [];
         this.dots = dots_array;
     }
+
+    draw_it(context: CanvasRenderingContext2D) {
+        if (this.dots.length < 2) {
+            console.warn("Polygon needs at least two points to be drawn.");
+            return;
+          }
+      
+          context.beginPath();
+          // Mover para o primeiro ponto
+          context.moveTo(this.dots[0].x, this.dots[0].y);
+      
+          // Criar linhas para os outros pontos
+          for (let i = 1; i < this.dots.length; i++) {
+            context.lineTo(this.dots[i].x, this.dots[i].y);
+          }
+      
+          // Fechar o polígono ligando o último ponto ao primeiro
+          context.closePath();
+      
+          // Preencher o polígono com a cor definida
+          if(this.color !== "void"){
+            context.fillStyle = this.color;
+            context.fill();
+          }
+      
+          // Opcional: adicionar uma borda
+          context.strokeStyle = "black";
+          context.stroke();
+    }
 }
 
 class Ball {
@@ -195,15 +224,20 @@ class Universe {
         array_aux.push(system_dot_1)
         array_aux.push(system_dot_2)
         array_aux.push(system_dot_3)
-        let aux = new Polygon("black", array_aux);
+        let aux = new Polygon("void", array_aux);
         this.polygons.push(aux);
     }
     
-
     append_ball(new_ball: Ball){
         // new_ball.print_info();
         new_ball.draw_it();
         this.balls.push(new_ball);
+    }
+
+    append_polygon(new_polygon: Polygon){
+        // new_polygon.print_info();
+        new_polygon.draw_it(this.ctx);
+        this.polygons.push(new_polygon);
     }
 
     animate_world = () => {
@@ -214,6 +248,9 @@ class Universe {
                 this.balls[i].verify_all_walls(this.polygons[j])   
                 }
                 this.balls[i].update_position()
+            }
+        for(let x = 0; x < this.polygons.length; x++){
+            this.polygons[x].draw_it(this.ctx);
             }
         requestAnimationFrame(this.animate_world);
         // console.log("x = " + this.balls[0].x + "   y = " + this.balls[0].x)
@@ -237,7 +274,17 @@ var ball_1 = new Ball(20, 400, 200, 3, 2, 3, ctx);
 
 let uni = new Universe(ctx, canvas.width, canvas.height);
 
+const polygon = new Polygon("blue", [
+    new Dot(100, 100),
+    new Dot(200, 50),
+    new Dot(300, 150),
+    new Dot(250, 250),
+    new Dot(150, 200),
+  ]);
+  
+polygon.draw_it(ctx);
 ball_1.draw_it();
+uni.append_polygon(polygon);
 
 uni.append_ball(ball_1);
 // uni.append_ball(ball_2);

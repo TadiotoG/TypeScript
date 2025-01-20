@@ -11,6 +11,29 @@ var Polygon = /** @class */ (function () {
         this.dots = [];
         this.dots = dots_array;
     }
+    Polygon.prototype.draw_it = function (context) {
+        if (this.dots.length < 2) {
+            console.warn("Polygon needs at least two points to be drawn.");
+            return;
+        }
+        context.beginPath();
+        // Mover para o primeiro ponto
+        context.moveTo(this.dots[0].x, this.dots[0].y);
+        // Criar linhas para os outros pontos
+        for (var i = 1; i < this.dots.length; i++) {
+            context.lineTo(this.dots[i].x, this.dots[i].y);
+        }
+        // Fechar o polígono ligando o último ponto ao primeiro
+        context.closePath();
+        // Preencher o polígono com a cor definida
+        if (this.color !== "void") {
+            context.fillStyle = this.color;
+            context.fill();
+        }
+        // Opcional: adicionar uma borda
+        context.strokeStyle = "black";
+        context.stroke();
+    };
     return Polygon;
 }());
 var Ball = /** @class */ (function () {
@@ -151,6 +174,9 @@ var Universe = /** @class */ (function () {
                 }
                 _this.balls[i].update_position();
             }
+            for (var x = 0; x < _this.polygons.length; x++) {
+                _this.polygons[x].draw_it(_this.ctx);
+            }
             requestAnimationFrame(_this.animate_world);
             // console.log("x = " + this.balls[0].x + "   y = " + this.balls[0].x)
         };
@@ -166,13 +192,18 @@ var Universe = /** @class */ (function () {
         array_aux.push(system_dot_1);
         array_aux.push(system_dot_2);
         array_aux.push(system_dot_3);
-        var aux = new Polygon("black", array_aux);
+        var aux = new Polygon("void", array_aux);
         this.polygons.push(aux);
     }
     Universe.prototype.append_ball = function (new_ball) {
         // new_ball.print_info();
         new_ball.draw_it();
         this.balls.push(new_ball);
+    };
+    Universe.prototype.append_polygon = function (new_polygon) {
+        // new_polygon.print_info();
+        new_polygon.draw_it(this.ctx);
+        this.polygons.push(new_polygon);
     };
     return Universe;
 }());
@@ -190,7 +221,16 @@ document.body.appendChild(canvas);
 var ball_1 = new Ball(20, 400, 200, 3, 2, 3, ctx);
 // var ball_2 = new Ball(50, 200, 200, 3, 1, 1, ctx);
 var uni = new Universe(ctx, canvas.width, canvas.height);
+var polygon = new Polygon("blue", [
+    new Dot(100, 100),
+    new Dot(200, 50),
+    new Dot(300, 150),
+    new Dot(250, 250),
+    new Dot(150, 200),
+]);
+polygon.draw_it(ctx);
 ball_1.draw_it();
+uni.append_polygon(polygon);
 uni.append_ball(ball_1);
 // uni.append_ball(ball_2);
 uni.animate_world();
