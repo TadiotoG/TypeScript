@@ -45,9 +45,9 @@ class Ball {
         this.ctx.stroke();
     }
 
-    update_position(x: number, y:number){
-        this.x = x;
-        this.y = y;
+    update_position(){
+        this.x += this.vet_x;
+        this.y += this.vet_y;
         this.draw_it();
     }
 
@@ -115,7 +115,7 @@ class Ball {
         return prod_vetorial >= 0 ? angle : 360 - angle;
     }
 
-    detect_colision_with_edge(A, B) {
+    detect_colision_with_edge(A: Dot, B: Dot) {
         let VectorABx = B.x - A.x;
         let VectorABy = B.y - A.y;
     
@@ -129,20 +129,9 @@ class Ball {
         let Pprojx = A.x + tx * VectorABx;
         let Pprojy = A.y + tx * VectorABy;
         let distance = Math.sqrt((Pprojx - this.x) ** 2 + (Pprojy - this.y) ** 2);
-    
         return distance < this.radius + this.line_width / 2;
     }
     
-    verify_all_walls(p: Polygon){
-        for(let j = 0; j < p.dots.length; j++){
-            if (j === p.dots.length-1){
-                this.updateDiagonalCollision(p.dots[j], p.dots[0]);
-            } else {
-                this.updateDiagonalCollision(p.dots[j], p.dots[j+1]);
-            }
-        }
-    }
-
     updateDiagonalCollision(wallStart: Dot, wallEnd: Dot){
         // Vetor da parede
         const wallVector = {
@@ -170,6 +159,21 @@ class Ball {
         this.vet_x = this.vet_x - 2 * dotProduct * normalUnit.x;
         this.vet_y = this.vet_y - 2 * dotProduct * normalUnit.y;
       }
+
+      verify_all_walls(p: Polygon){
+        for(let j = 0; j < p.dots.length; j++){
+            if (j === p.dots.length-1){
+                if(this.detect_colision_with_edge(p.dots[j], p.dots[0])){
+                    this.updateDiagonalCollision(p.dots[j], p.dots[0]);
+                }
+            } else {
+                if(this.detect_colision_with_edge(p.dots[j], p.dots[j+1])){
+                    this.updateDiagonalCollision(p.dots[j], p.dots[j+1]);
+                }
+            }
+        }
+    }
+
 
 }
 
@@ -209,9 +213,10 @@ class Universe {
             for(let j = 0; j < this.polygons.length; j++){
                 this.balls[i].verify_all_walls(this.polygons[j])   
                 }
+                this.balls[i].update_position()
             }
         requestAnimationFrame(this.animate_world);
-        console.log("x = " + this.balls[0].x + "   y = " + this.balls[0].x)
+        // console.log("x = " + this.balls[0].x + "   y = " + this.balls[0].x)
     }
 }
 

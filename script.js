@@ -29,9 +29,9 @@ var Ball = /** @class */ (function () {
         this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, true);
         this.ctx.stroke();
     };
-    Ball.prototype.update_position = function (x, y) {
-        this.x = x;
-        this.y = y;
+    Ball.prototype.update_position = function () {
+        this.x += this.vet_x;
+        this.y += this.vet_y;
         this.draw_it();
     };
     Ball.prototype.print_info = function () {
@@ -100,16 +100,6 @@ var Ball = /** @class */ (function () {
         var distance = Math.sqrt(Math.pow((Pprojx - this.x), 2) + Math.pow((Pprojy - this.y), 2));
         return distance < this.radius + this.line_width / 2;
     };
-    Ball.prototype.verify_all_walls = function (p) {
-        for (var j = 0; j < p.dots.length; j++) {
-            if (j === p.dots.length - 1) {
-                this.updateDiagonalCollision(p.dots[j], p.dots[0]);
-            }
-            else {
-                this.updateDiagonalCollision(p.dots[j], p.dots[j + 1]);
-            }
-        }
-    };
     Ball.prototype.updateDiagonalCollision = function (wallStart, wallEnd) {
         // Vetor da parede
         var wallVector = {
@@ -133,6 +123,20 @@ var Ball = /** @class */ (function () {
         this.vet_x = this.vet_x - 2 * dotProduct * normalUnit.x;
         this.vet_y = this.vet_y - 2 * dotProduct * normalUnit.y;
     };
+    Ball.prototype.verify_all_walls = function (p) {
+        for (var j = 0; j < p.dots.length; j++) {
+            if (j === p.dots.length - 1) {
+                if (this.detect_colision_with_edge(p.dots[j], p.dots[0])) {
+                    this.updateDiagonalCollision(p.dots[j], p.dots[0]);
+                }
+            }
+            else {
+                if (this.detect_colision_with_edge(p.dots[j], p.dots[j + 1])) {
+                    this.updateDiagonalCollision(p.dots[j], p.dots[j + 1]);
+                }
+            }
+        }
+    };
     return Ball;
 }());
 var Universe = /** @class */ (function () {
@@ -145,9 +149,10 @@ var Universe = /** @class */ (function () {
                 for (var j = 0; j < _this.polygons.length; j++) {
                     _this.balls[i].verify_all_walls(_this.polygons[j]);
                 }
+                _this.balls[i].update_position();
             }
             requestAnimationFrame(_this.animate_world);
-            console.log("x = " + _this.balls[0].x + "   y = " + _this.balls[0].x);
+            // console.log("x = " + this.balls[0].x + "   y = " + this.balls[0].x)
         };
         this.ctx = ctx_out;
         this.balls = [];
