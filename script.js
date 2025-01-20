@@ -207,6 +207,15 @@ var Universe = /** @class */ (function () {
     };
     return Universe;
 }());
+function begin_animation() {
+    animation_on = true;
+    uni.animate_world();
+}
+function create_polygon() {
+    var new_p = new Polygon("red", dots_new_polygon);
+    uni.append_polygon(new_p);
+    dots_new_polygon = [];
+}
 var canvas = document.createElement("canvas");
 canvas.id = "canvas-giratorio";
 canvas.style.backgroundColor = "white";
@@ -218,6 +227,17 @@ canvas.width = 1000;
 canvas.height = 800;
 ctx.imageSmoothingEnabled = false;
 document.body.appendChild(canvas);
+var el = document.querySelector("canvas");
+var dots_new_polygon = [];
+el.addEventListener("click", function (e) {
+    var target = e.target;
+    var rect = target.getBoundingClientRect();
+    var x = Math.floor(e.clientX - rect.left);
+    var y = Math.floor(e.clientY - rect.top);
+    var dot = new Dot(x, y);
+    dots_new_polygon.push(dot);
+});
+var animation_on = false;
 var ball_1 = new Ball(20, 400, 200, 3, 2, 3, ctx);
 // var ball_2 = new Ball(50, 200, 200, 3, 1, 1, ctx);
 var uni = new Universe(ctx, canvas.width, canvas.height);
@@ -233,4 +253,3 @@ ball_1.draw_it();
 uni.append_polygon(polygon);
 uni.append_ball(ball_1);
 // uni.append_ball(ball_2);
-uni.animate_world();
