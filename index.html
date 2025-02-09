@@ -10,17 +10,33 @@
     body {
         text-align: center;
         align-items: center;
-        display: flex-direction;
-        justify-content: center;
+        display: flex;
+        justify-content: space-between;
         background: linear-gradient(0deg,grey, white) center center / cover no-repeat fixed;
+        flex-direction: column;
+    }
+
+    body > .buttons {
+        padding: 10px;
+        margin: 10px;
+        font-size: 15px;
+        width: 200px;
+    }
+
+    #b_01 {
+        order: 2;
+    }
+
+    #b_02 {
+        order: 3;
     }
 </style>
 
 <body>
     <h1>Teste CG</h1>
 
-    <button onclick="begin_animation()">Comecar</button>
-    <button onclick="create_polygon()">Criar poligono</button>
+    <button onclick="begin_animation()" class="buttons" id="b_02">Comecar</button>
+    <button onclick="create_polygon()" class="buttons" id="b_01">Criar poligono</button>
     <script src="script.js"></script>
 </body>
 </html>

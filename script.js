@@ -6,10 +6,12 @@ var Dot = /** @class */ (function () {
     return Dot;
 }());
 var Polygon = /** @class */ (function () {
-    function Polygon(new_color, dots_array) {
+    function Polygon(new_color, dots_array, closed) {
+        if (closed === void 0) { closed = true; }
         this.color = new_color;
         this.dots = [];
         this.dots = dots_array;
+        this.closed = closed;
     }
     Polygon.prototype.draw_it = function (context) {
         if (this.dots.length < 2) {
@@ -24,7 +26,9 @@ var Polygon = /** @class */ (function () {
             context.lineTo(this.dots[i].x, this.dots[i].y);
         }
         // Fechar o polígono ligando o último ponto ao primeiro
-        context.closePath();
+        if (this.closed === true) {
+            context.closePath();
+        }
         // Preencher o polígono com a cor definida
         if (this.color !== "void") {
             context.fillStyle = this.color;
@@ -36,6 +40,28 @@ var Polygon = /** @class */ (function () {
     };
     return Polygon;
 }());
+function getCircleBorderPoints(xc, yc, radius, numPoints, whole) {
+    if (numPoints === void 0) { numPoints = 100; }
+    if (whole === void 0) { whole = false; }
+    var points = [];
+    if (whole === true) {
+        for (var i = 0; i < numPoints - 3; i++) {
+            var theta = (i / numPoints) * 2 * Math.PI;
+            var x = xc + radius * Math.cos(theta);
+            var y = yc + radius * Math.sin(theta);
+            points.push(new Dot(x, y));
+        }
+    }
+    else {
+        for (var i = 0; i < numPoints; i++) {
+            var theta = (i / numPoints) * 2 * Math.PI;
+            var x = xc + radius * Math.cos(theta);
+            var y = yc + radius * Math.sin(theta);
+            points.push(new Dot(x, y));
+        }
+    }
+    return points;
+}
 var Ball = /** @class */ (function () {
     function Ball(radius, x, y, line_width, x_vector, y_vector, ctx_out) {
         this.radius = radius;
@@ -147,18 +173,42 @@ var Ball = /** @class */ (function () {
         this.vet_y = this.vet_y - 2 * dotProduct * normalUnit.y;
     };
     Ball.prototype.verify_all_walls = function (p) {
+        var collisionNormals = [];
         for (var j = 0; j < p.dots.length; j++) {
             if (j === p.dots.length - 1) {
-                if (this.detect_colision_with_edge(p.dots[j], p.dots[0])) {
-                    this.updateDiagonalCollision(p.dots[j], p.dots[0]);
+                if (this.detect_colision_with_edge(p.dots[j], p.dots[0]) && p.closed === true) {
+                    var normal = this.get_normal_vector(p.dots[j], p.dots[0]);
+                    collisionNormals.push(normal);
                 }
             }
             else {
                 if (this.detect_colision_with_edge(p.dots[j], p.dots[j + 1])) {
-                    this.updateDiagonalCollision(p.dots[j], p.dots[j + 1]);
+                    var normal = this.get_normal_vector(p.dots[j], p.dots[j + 1]);
+                    collisionNormals.push(normal);
                 }
             }
         }
+        if (collisionNormals.length === 1) {
+            // Colisão com apenas uma borda (reflexão normal)
+            this.reflect_velocity(collisionNormals[0]);
+        }
+        else if (collisionNormals.length > 1) {
+            // Colisão com duas bordas ao mesmo tempo
+            var avgNormal = {
+                x: collisionNormals.reduce(function (sum, n) { return sum + n.x; }, 0) / collisionNormals.length,
+                y: collisionNormals.reduce(function (sum, n) { return sum + n.y; }, 0) / collisionNormals.length,
+            };
+            var magnitude = Math.sqrt(Math.pow(avgNormal.x, 2) + Math.pow(avgNormal.y, 2));
+            avgNormal.x /= magnitude;
+            avgNormal.y /= magnitude;
+            this.reflect_velocity(avgNormal);
+        }
+    };
+    // Função para refletir a velocidade da bola
+    Ball.prototype.reflect_velocity = function (normal) {
+        var dotProduct = this.vet_x * normal.x + this.vet_y * normal.y;
+        this.vet_x = this.vet_x - 2 * dotProduct * normal.x;
+        this.vet_y = this.vet_y - 2 * dotProduct * normal.y;
     };
     return Ball;
 }());
@@ -220,11 +270,11 @@ var canvas = document.createElement("canvas");
 canvas.id = "canvas-giratorio";
 canvas.style.backgroundColor = "white";
 canvas.style.border = "1px solid black";
-canvas.style.width = "1000px";
-canvas.style.height = "800px";
+canvas.style.width = "800px";
+canvas.style.height = "1000px";
 var ctx = canvas.getContext("2d");
-canvas.width = 1000;
-canvas.height = 800;
+canvas.width = 800;
+canvas.height = 1000;
 ctx.imageSmoothingEnabled = false;
 document.body.appendChild(canvas);
 var el = document.querySelector("canvas");
@@ -238,18 +288,13 @@ el.addEventListener("click", function (e) {
     dots_new_polygon.push(dot);
 });
 var animation_on = false;
-var ball_1 = new Ball(20, 400, 200, 3, 2, 3, ctx);
+var ball_1 = new Ball(20, canvas.width / 2, canvas.height / 2, 3, 2, 3, ctx);
 // var ball_2 = new Ball(50, 200, 200, 3, 1, 1, ctx);
+var static_ball = new Polygon("void", getCircleBorderPoints(canvas.width / 2, canvas.height / 2, 250, 50, true), false);
+var static_ball_2 = new Polygon("void", getCircleBorderPoints(canvas.width / 2, canvas.height / 2, 200, 50, true), false);
 var uni = new Universe(ctx, canvas.width, canvas.height);
-var polygon = new Polygon("blue", [
-    new Dot(100, 100),
-    new Dot(200, 50),
-    new Dot(300, 150),
-    new Dot(250, 250),
-    new Dot(150, 200),
-]);
-polygon.draw_it(ctx);
 ball_1.draw_it();
-uni.append_polygon(polygon);
+uni.append_polygon(static_ball);
+uni.append_polygon(static_ball_2);
 uni.append_ball(ball_1);
-// uni.append_ball(ball_2);
+// uni.append_ball(ball_2);z
