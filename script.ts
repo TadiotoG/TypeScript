@@ -8,6 +8,10 @@ class Dot{
     }
 }
 
+function distance(A: Dot, B: Dot){
+    return Math.sqrt((A.x - B.x) ** 2 + (A.y - B.y) ** 2);
+}
+
 class Polygon{
     dots: Array<Dot>;
     color: string;
@@ -37,6 +41,95 @@ class Polygon{
       
           // Fechar o polígono ligando o último ponto ao primeiro
           if(this.closed === true){
+            context.closePath();
+          }
+      
+          // Preencher o polígono com a cor definida
+          if(this.color !== "void"){
+            context.fillStyle = this.color;
+            context.fill();
+          }
+      
+          // Opcional: adicionar uma borda
+          context.strokeStyle = "black";
+          context.stroke();
+    }
+}
+
+class CircleAsPolygon{
+    thetas_list: number[];
+    dots: Array<Dot>;
+    x_pos: number;
+    y_pos: number;
+    rad: number;
+    whole: boolean;
+    color: string;
+    velocity: number;
+    whole_size: number;
+
+    constructor(pos_x: number, pos_y: number, radius:number, color: string, whole: boolean = true, vel: number, whole_size: number=5){
+        this.whole = whole;
+        this.x_pos = pos_x;
+        this.y_pos = pos_y;
+        this.rad = radius;
+        this.velocity = vel;
+        this.color = color;
+        this.whole_size = whole_size;
+        this.thetas_list = [];
+        this.getTheta(100);
+        this.getDots();
+    }
+
+    rotate(){
+        for(let i=0; i<this.thetas_list.length; i++){
+            this.thetas_list[i] += this.velocity;
+            this.dots[i].x = this.x_pos + this.rad * Math.cos(this.thetas_list[i]);
+            this.dots[i].y = this.y_pos + this.rad * Math.sin(this.thetas_list[i]);
+        }
+    }
+
+    getDots(){
+        let points = [];
+        for (let i = 0; i < this.thetas_list.length; i++) {
+            let theta = (i / this.thetas_list.length) * 2 * Math.PI;
+            let x = this.x_pos + this.rad * Math.cos(theta);
+            let y = this.y_pos + this.rad * Math.sin(theta);
+            
+            points.push(new Dot(x, y));
+        }
+        this.dots = points;
+    }
+
+    getTheta(numPoints: number = 100){
+        if(this.whole === true){
+            for (let i = 0; i < numPoints-this.whole_size; i++) {
+                this.thetas_list.push((i / numPoints) * 2 * Math.PI);
+            }
+        } else {
+            for (let i = 0; i < numPoints; i++) {
+                this.thetas_list.push((i / numPoints) * 2 * Math.PI);
+            }
+        }
+    }
+    
+
+    draw_it(context: CanvasRenderingContext2D) {
+        if (this.dots.length < 2) {
+            console.warn("Polygon needs at least two points to be drawn.");
+            return;
+          }
+      
+          context.beginPath();
+          // Mover para o primeiro ponto
+          context.moveTo(this.dots[0].x, this.dots[0].y);
+      
+          // Criar linhas para os outros pontos
+          for (let i = 1; i < this.dots.length; i++) {
+            context.lineTo(this.dots[i].x, this.dots[i].y);
+          }
+      
+          // Fechar o polígono ligando o último ponto ao primeiro
+          if(this.whole === false){
             context.closePath();
           }
       
@@ -113,7 +206,7 @@ class Ball {
         console.log("Line width: " + this.line_width);
     }
 
-    detect_colision_betwen_objects(polygon: Polygon){
+    detect_colision_edges(polygon: Polygon){
         let aux = false;
         let angle = -1;
         for(let j = 0; j < polygon.dots.length; j++){
@@ -215,17 +308,17 @@ class Ball {
         this.vet_y = this.vet_y - 2 * dotProduct * normalUnit.y;
       }
 
-      verify_all_walls(p: Polygon){
+      verify_all_walls(dots: Array<Dot>, whole: boolean = false){
         let collisionNormals = [];
-        for(let j = 0; j < p.dots.length; j++){
-            if (j === p.dots.length-1){
-                if(this.detect_colision_with_edge(p.dots[j], p.dots[0]) && p.closed === true){
-                    let normal = this.get_normal_vector(p.dots[j], p.dots[0]);
+        for(let j = 0; j < dots.length; j++){
+            if (j === dots.length-1){
+                if(this.detect_colision_with_edge(dots[j], dots[0]) && whole === false){
+                    let normal = this.get_normal_vector(dots[j], dots[0]);
                     collisionNormals.push(normal);
                 }
             } else {
-                if(this.detect_colision_with_edge(p.dots[j], p.dots[j+1])){
-                    let normal = this.get_normal_vector(p.dots[j], p.dots[j+1]);
+                if(this.detect_colision_with_edge(dots[j], dots[j+1])){
+                    let normal = this.get_normal_vector(dots[j], dots[j+1]);
                     collisionNormals.push(normal);
                 }
             }
@@ -260,11 +353,13 @@ class Universe {
     balls: Array<Ball>;
     ctx: CanvasRenderingContext2D;
     polygons: Array<Polygon>;
+    circles: Array<CircleAsPolygon>;
 
     constructor(ctx_out: CanvasRenderingContext2D, width_limit: number, height_limit: number){
         this.ctx = ctx_out;
         this.balls = [];
         this.polygons = [];
+        this.circles = [];
         let system_dot_0 = new Dot(0,0);
         let system_dot_1 = new Dot(0,height_limit);
         let system_dot_2 = new Dot(width_limit,height_limit);
@@ -290,13 +385,33 @@ class Universe {
         this.polygons.push(new_polygon);
     }
 
+    append_circle(circle: CircleAsPolygon){
+        // circle.print_info();
+        circle.draw_it(this.ctx);
+        this.circles.push(circle);
+    }
+
     animate_world = () => {
         this.ctx.fillStyle = "white";
         this.ctx.fillRect(0, 0, canvas.width, canvas.height);
         for(let i = 0; i < this.balls.length; i++){
             for(let j = 0; j < this.polygons.length; j++){
-                this.balls[i].verify_all_walls(this.polygons[j])   
+                this.balls[i].verify_all_walls(this.polygons[j].dots)   
                 }
+
+            for(let x = 0; x < this.circles.length; x++){
+                
+                this.balls[i].verify_all_walls(this.circles[x].dots, this.circles[x].whole)
+                this.circles[x].draw_it(this.ctx);
+                this.circles[x].rotate();
+                let dist_MidBigBall2SmallBall = distance(new Dot(this.circles[x].x_pos, this.circles[x].y_pos), new Dot(this.balls[i].x, this.balls[i].y))
+                if(dist_MidBigBall2SmallBall > (this.circles[x].rad)){
+                    this.circles.pop();
+                }
+                
+// Se a distancia do centro da bola maior, até a bolinha for maior do que seu raio + o raio da bolinha, ela esta fora
+
+            }
                 this.balls[i].update_position()
             }
         for(let x = 0; x < this.polygons.length; x++){
@@ -352,15 +467,14 @@ var animation_on = false;
 
 var ball_1 = new Ball(20, canvas.width/2, canvas.height/2, 3, 2, 3, ctx);
 
-// var ball_2 = new Ball(50, 200, 200, 3, 1, 1, ctx);
-
-var static_ball = new Polygon("void", getCircleBorderPoints(canvas.width/2, canvas.height/2, 250, 50, true), false)
-var static_ball_2 = new Polygon("void", getCircleBorderPoints(canvas.width/2, canvas.height/2, 200, 50, true), false)
-
 let uni = new Universe(ctx, canvas.width, canvas.height);
 
+for(let i =1; i < 8; i++){
+    let static_ball = new CircleAsPolygon(canvas.width/2, canvas.height/2, 400-40*i, "void", true, 0.004*i, 8)
+    uni.append_circle(static_ball);
+}
+
 ball_1.draw_it();
-uni.append_polygon(static_ball)
-uni.append_polygon(static_ball_2)
+// uni.append_polygon(static_ball_2)
 uni.append_ball(ball_1);
 // uni.append_ball(ball_2);z
