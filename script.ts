@@ -175,6 +175,7 @@ class Ball {
     vet_x: number;
     vet_y: number;
     ctx: CanvasRenderingContext2D;
+    gravity: number;
 
     constructor(radius: number, x: number, y: number, line_width: number, x_vector: number, y_vector: number, ctx_out: CanvasRenderingContext2D){
         this.radius = radius;
@@ -183,6 +184,7 @@ class Ball {
         this.line_width = line_width;
         this.vet_x = x_vector;
         this.vet_y = y_vector;
+        this.gravity = 0.02;
         this.ctx = ctx_out;
     }
 
@@ -194,6 +196,7 @@ class Ball {
     }
 
     update_position(){
+        this.vet_y += this.gravity;
         this.x += this.vet_x;
         this.y += this.vet_y;
         this.draw_it();
@@ -313,11 +316,13 @@ class Ball {
         for(let j = 0; j < dots.length; j++){
             if (j === dots.length-1){
                 if(this.detect_colision_with_edge(dots[j], dots[0]) && whole === false){
+                    // alert("Olha o vet y " + this.vet_y)
                     let normal = this.get_normal_vector(dots[j], dots[0]);
                     collisionNormals.push(normal);
                 }
             } else {
                 if(this.detect_colision_with_edge(dots[j], dots[j+1])){
+                    // alert("Olha o vet y " + this.vet_y)
                     let normal = this.get_normal_vector(dots[j], dots[j+1]);
                     collisionNormals.push(normal);
                 }
@@ -405,7 +410,7 @@ class Universe {
                 this.circles[x].draw_it(this.ctx);
                 this.circles[x].rotate();
                 let dist_MidBigBall2SmallBall = distance(new Dot(this.circles[x].x_pos, this.circles[x].y_pos), new Dot(this.balls[i].x, this.balls[i].y))
-                if(dist_MidBigBall2SmallBall > (this.circles[x].rad)){
+                if(dist_MidBigBall2SmallBall > (this.circles[x].rad - this.balls[i].radius + 7)){
                     this.circles.pop();
                 }
                 
@@ -465,12 +470,12 @@ el.addEventListener("click", (e) => {
 
 var animation_on = false;
 
-var ball_1 = new Ball(20, canvas.width/2, canvas.height/2, 3, 2, 3, ctx);
+var ball_1 = new Ball(15, canvas.width/2, canvas.height/2, 3, 1.6, 1.6, ctx);
 
 let uni = new Universe(ctx, canvas.width, canvas.height);
 
-for(let i =1; i < 8; i++){
-    let static_ball = new CircleAsPolygon(canvas.width/2, canvas.height/2, 400-40*i, "void", true, 0.004*i, 8)
+for(let i =1; i < 7; i++){
+    let static_ball = new CircleAsPolygon(canvas.width/2, canvas.height/2, 300-30*i, "void", true, 0.0001*i, 8)
     uni.append_circle(static_ball);
 }
 

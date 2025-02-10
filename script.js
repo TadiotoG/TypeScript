@@ -145,6 +145,7 @@ var Ball = /** @class */ (function () {
         this.line_width = line_width;
         this.vet_x = x_vector;
         this.vet_y = y_vector;
+        this.gravity = 0.02;
         this.ctx = ctx_out;
     }
     Ball.prototype.draw_it = function () {
@@ -154,6 +155,7 @@ var Ball = /** @class */ (function () {
         this.ctx.stroke();
     };
     Ball.prototype.update_position = function () {
+        this.vet_y += this.gravity;
         this.x += this.vet_x;
         this.y += this.vet_y;
         this.draw_it();
@@ -253,12 +255,14 @@ var Ball = /** @class */ (function () {
         for (var j = 0; j < dots.length; j++) {
             if (j === dots.length - 1) {
                 if (this.detect_colision_with_edge(dots[j], dots[0]) && whole === false) {
+                    // alert("Olha o vet y " + this.vet_y)
                     var normal = this.get_normal_vector(dots[j], dots[0]);
                     collisionNormals.push(normal);
                 }
             }
             else {
                 if (this.detect_colision_with_edge(dots[j], dots[j + 1])) {
+                    // alert("Olha o vet y " + this.vet_y)
                     var normal = this.get_normal_vector(dots[j], dots[j + 1]);
                     collisionNormals.push(normal);
                 }
@@ -303,7 +307,7 @@ var Universe = /** @class */ (function () {
                     _this.circles[x].draw_it(_this.ctx);
                     _this.circles[x].rotate();
                     var dist_MidBigBall2SmallBall = distance(new Dot(_this.circles[x].x_pos, _this.circles[x].y_pos), new Dot(_this.balls[i].x, _this.balls[i].y));
-                    if (dist_MidBigBall2SmallBall > (_this.circles[x].rad)) {
+                    if (dist_MidBigBall2SmallBall > (_this.circles[x].rad - _this.balls[i].radius + 7)) {
                         _this.circles.pop();
                     }
                     // Se a distancia do centro da bola maior, até a bolinha for maior do que seu raio + o raio da bolinha, ela esta fora
@@ -380,10 +384,10 @@ el.addEventListener("click", function (e) {
     dots_new_polygon.push(dot);
 });
 var animation_on = false;
-var ball_1 = new Ball(20, canvas.width / 2, canvas.height / 2, 3, 2, 3, ctx);
+var ball_1 = new Ball(15, canvas.width / 2, canvas.height / 2, 3, 1.6, 1.6, ctx);
 var uni = new Universe(ctx, canvas.width, canvas.height);
-for (var i = 1; i < 8; i++) {
-    var static_ball = new CircleAsPolygon(canvas.width / 2, canvas.height / 2, 400 - 40 * i, "void", true, 0.004 * i, 8);
+for (var i = 1; i < 7; i++) {
+    var static_ball = new CircleAsPolygon(canvas.width / 2, canvas.height / 2, 300 - 30 * i, "void", true, 0.0001 * i, 8);
     uni.append_circle(static_ball);
 }
 ball_1.draw_it();
