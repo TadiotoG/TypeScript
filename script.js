@@ -115,13 +115,15 @@ var CircleAsPolygon = /** @class */ (function () {
             console.warn("Polygon needs at least two points to be drawn.");
             return;
         }
-        context.beginPath();
         context.lineWidth = 3;
         // Mover para o primeiro ponto
-        context.moveTo(this.dots[0].x, this.dots[0].y);
         // Criar linhas para os outros pontos
         for (var i = 1; i < this.dots.length; i++) {
+            context.beginPath();
+            context.moveTo(this.dots[i - 1].x, this.dots[i - 1].y);
             context.lineTo(this.dots[i].x, this.dots[i].y);
+            context.strokeStyle = "rgb(".concat(Math.floor(2 * i), " ").concat(Math.floor(255 - 1 * i), " ").concat(Math.floor(255 - 4 * i));
+            context.stroke();
         }
         // Fechar o polígono ligando o último ponto ao primeiro
         if (this.whole === false) {
@@ -129,12 +131,12 @@ var CircleAsPolygon = /** @class */ (function () {
         }
         // Preencher o polígono com a cor definida
         if (this.color !== "void") {
-            context.fillStyle = this.color;
+            context.strokeStyle = this.color;
             context.fill();
         }
         // Opcional: adicionar uma borda
-        context.strokeStyle = "black";
-        context.stroke();
+        //   context.strokeStyle = "black";
+        //   context.stroke();
     };
     return CircleAsPolygon;
 }());
@@ -162,8 +164,11 @@ var CircleAsPolygon = /** @class */ (function () {
 //     return points;
 // }
 var Ball = /** @class */ (function () {
-    function Ball(radius, x, y, line_width, x_vector, y_vector, ctx_out, growing_v) {
+    function Ball(border_col, fill_col, radius, x, y, line_width, x_vector, y_vector, ctx_out, growing_v, how_many_shadows) {
         if (growing_v === void 0) { growing_v = 0.5; }
+        if (how_many_shadows === void 0) { how_many_shadows = 10; }
+        this.fill_color = fill_col;
+        this.border_color = border_col;
         this.radius = radius;
         this.x = x;
         this.y = y;
@@ -173,14 +178,46 @@ var Ball = /** @class */ (function () {
         this.gravity = 0.02;
         this.ctx = ctx_out;
         this.growing_value = growing_v;
+        this.shadow_pos_list = [];
+        this.shadow_num = how_many_shadows;
+        this.create_shadow_list();
     }
+    Ball.prototype.create_shadow_list = function () {
+        for (var i = 0; i < this.shadow_num; i++) {
+            this.shadow_pos_list.push(new Dot(0, 0));
+        }
+    };
+    Ball.prototype.update_shadow_list = function () {
+        for (var i = this.shadow_num - 1; i >= 1; i--) { // Acessando os ultimos primeiro
+            this.shadow_pos_list[i].x = this.shadow_pos_list[i - 1].x;
+            this.shadow_pos_list[i].y = this.shadow_pos_list[i - 1].y;
+        }
+        this.shadow_pos_list[0].x = this.x;
+        this.shadow_pos_list[0].y = this.y;
+    };
     Ball.prototype.draw_it = function () {
+        this.draw_shadows();
         this.ctx.beginPath();
         this.ctx.lineWidth = this.line_width;
         this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, true);
+        this.ctx.fillStyle = this.fill_color;
+        this.ctx.fill();
+        this.ctx.strokeStyle = this.border_color;
         this.ctx.stroke();
     };
+    Ball.prototype.draw_shadows = function () {
+        for (var i = this.shadow_pos_list.length - 1; i >= 0; i--) { // Acessando os ultimos primeiro
+            this.ctx.beginPath();
+            this.ctx.lineWidth = this.line_width;
+            this.ctx.arc(this.shadow_pos_list[i].x, this.shadow_pos_list[i].y, this.radius, 0, Math.PI * 2, true);
+            this.ctx.fillStyle = "white";
+            this.ctx.fill();
+            this.ctx.strokeStyle = this.border_color;
+            this.ctx.stroke();
+        }
+    };
     Ball.prototype.update_position = function () {
+        this.update_shadow_list();
         this.vet_y += this.gravity;
         this.x += this.vet_x;
         this.y += this.vet_y;
@@ -330,10 +367,10 @@ var Ball = /** @class */ (function () {
     return Ball;
 }());
 var Universe = /** @class */ (function () {
-    function Universe(ctx_out, width_limit, height_limit) {
+    function Universe(ctx_out, width_limit, height_limit, background_color) {
         var _this = this;
         this.animate_world = function () {
-            _this.ctx.fillStyle = "white";
+            _this.ctx.fillStyle = _this.back_color;
             _this.ctx.fillRect(0, 0, canvas.width, canvas.height);
             for (var i = 0; i < _this.balls.length; i++) {
                 for (var j = 0; j < _this.polygons.length; j++) {
@@ -361,6 +398,7 @@ var Universe = /** @class */ (function () {
         this.balls = [];
         this.polygons = [];
         this.circles = [];
+        this.back_color = background_color;
         var system_dot_0 = new Dot(0, 0);
         var system_dot_1 = new Dot(0, height_limit);
         var system_dot_2 = new Dot(width_limit, height_limit);
@@ -372,6 +410,8 @@ var Universe = /** @class */ (function () {
         array_aux.push(system_dot_3);
         var aux = new Polygon("void", array_aux);
         this.polygons.push(aux);
+        this.ctx.fillStyle = this.back_color;
+        this.ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     Universe.prototype.append_ball = function (new_ball) {
         // new_ball.print_info();
@@ -423,15 +463,16 @@ el.addEventListener("click", function (e) {
 });
 var GROWING;
 var animation_on = false;
-var ball_1 = new Ball(20, canvas.width / 2, canvas.height / 2, 3, -2, 2, ctx, 0.4);
-var uni = new Universe(ctx, canvas.width, canvas.height);
+var background_color = "black";
+var ball_1 = new Ball("rgb(255, 255, 255)", "rgb(248, 50, 255)", 20, canvas.width / 2, canvas.height / 2, 3, -2, 2, ctx, 0.4);
+var uni = new Universe(ctx, canvas.width, canvas.height, background_color);
 var ball_bigger_size = 300;
 var vel = 0.008;
 var whole_s = 7;
 var num_of_points_for_circle = 100;
 var num_of_ball = 13;
 for (var i = 1; i <= num_of_ball; i++) {
-    var static_ball = new CircleAsPolygon(canvas.width / 2, canvas.height / 2, ball_bigger_size - 15 * i, "void", true, vel * i / 100, whole_s, num_of_points_for_circle - i * 2);
+    var static_ball = new CircleAsPolygon(canvas.width / 2, canvas.height / 2, ball_bigger_size - 15 * i, "void", true, vel * i / 80, whole_s, num_of_points_for_circle - i * 2);
     uni.append_circle(static_ball);
 }
 ball_1.draw_it();

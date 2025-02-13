@@ -152,16 +152,17 @@ class CircleAsPolygon{
             console.warn("Polygon needs at least two points to be drawn.");
             return;
           }
-      
-          context.beginPath();
           
           context.lineWidth = 3;
           // Mover para o primeiro ponto
-          context.moveTo(this.dots[0].x, this.dots[0].y);
       
           // Criar linhas para os outros pontos
           for (let i = 1; i < this.dots.length; i++) {
+            context.beginPath();
+            context.moveTo(this.dots[i-1].x, this.dots[i-1].y)
             context.lineTo(this.dots[i].x, this.dots[i].y);
+            context.strokeStyle = `rgb(${Math.floor(2 * i)} ${Math.floor(255 - 1 * i)} ${Math.floor(255 - 4 * i)}`;
+            context.stroke();
           }
       
           // Fechar o polígono ligando o último ponto ao primeiro
@@ -171,13 +172,13 @@ class CircleAsPolygon{
       
           // Preencher o polígono com a cor definida
           if(this.color !== "void"){
-            context.fillStyle = this.color;
+            context.strokeStyle = this.color;
             context.fill();
           }
       
           // Opcional: adicionar uma borda
-          context.strokeStyle = "black";
-          context.stroke();
+        //   context.strokeStyle = "black";
+        //   context.stroke();
     }
 }
 
@@ -210,6 +211,8 @@ class CircleAsPolygon{
 // }
 
 class Ball {
+    fill_color: string;
+    border_color: string;
     radius: number;
     x: number;
     y: number;
@@ -219,8 +222,12 @@ class Ball {
     ctx: CanvasRenderingContext2D;
     gravity: number;
     growing_value: number;
+    shadow_pos_list: Array<Dot>;
+    shadow_num: number;
 
-    constructor(radius: number, x: number, y: number, line_width: number, x_vector: number, y_vector: number, ctx_out: CanvasRenderingContext2D, growing_v: number = 0.5){
+    constructor(border_col: string, fill_col:string, radius: number, x: number, y: number, line_width: number, x_vector: number, y_vector: number, ctx_out: CanvasRenderingContext2D, growing_v: number = 0.5, how_many_shadows: number=10){
+        this.fill_color = fill_col;
+        this.border_color = border_col;
         this.radius = radius;
         this.x = x;
         this.y = y;
@@ -230,16 +237,53 @@ class Ball {
         this.gravity = 0.02;
         this.ctx = ctx_out;
         this.growing_value = growing_v;
+        this.shadow_pos_list = []
+        this.shadow_num = how_many_shadows;
+        this.create_shadow_list();
+
+    }
+
+    create_shadow_list(){
+        for(let i=0; i < this.shadow_num; i++){
+            this.shadow_pos_list.push(new Dot(0, 0));
+        }
+    }
+
+    update_shadow_list(){
+        for(let i=this.shadow_num-1; i >= 1; i--){// Acessando os ultimos primeiro
+            this.shadow_pos_list[i].x = this.shadow_pos_list[i-1].x;
+            this.shadow_pos_list[i].y = this.shadow_pos_list[i-1].y;
+        }
+        
+        this.shadow_pos_list[0].x = this.x;
+        this.shadow_pos_list[0].y = this.y;
     }
 
     draw_it() {
+        this.draw_shadows();
         this.ctx.beginPath();
         this.ctx.lineWidth = this.line_width;
         this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, true);
+        this.ctx.fillStyle = this.fill_color;
+        this.ctx.fill();
+        this.ctx.strokeStyle = this.border_color;
         this.ctx.stroke();
     }
 
+    draw_shadows(){
+        for(let i=this.shadow_pos_list.length-1; i>=0; i--){// Acessando os ultimos primeiro
+            this.ctx.beginPath();
+            this.ctx.lineWidth = this.line_width;
+            this.ctx.arc(this.shadow_pos_list[i].x, this.shadow_pos_list[i].y, this.radius, 0, Math.PI * 2, true);
+            this.ctx.fillStyle = "white";
+            this.ctx.fill();
+            this.ctx.strokeStyle = this.border_color;
+            this.ctx.stroke();
+        }
+    }
+
     update_position(){
+        this.update_shadow_list();
         this.vet_y += this.gravity;
         this.x += this.vet_x;
         this.y += this.vet_y;
@@ -416,12 +460,14 @@ class Universe {
     ctx: CanvasRenderingContext2D;
     polygons: Array<Polygon>;
     circles: Array<CircleAsPolygon>;
+    back_color: string;
 
-    constructor(ctx_out: CanvasRenderingContext2D, width_limit: number, height_limit: number){
+    constructor(ctx_out: CanvasRenderingContext2D, width_limit: number, height_limit: number, background_color: string){
         this.ctx = ctx_out;
         this.balls = [];
         this.polygons = [];
         this.circles = [];
+        this.back_color = background_color;
         let system_dot_0 = new Dot(0,0);
         let system_dot_1 = new Dot(0,height_limit);
         let system_dot_2 = new Dot(width_limit,height_limit);
@@ -433,6 +479,8 @@ class Universe {
         array_aux.push(system_dot_3)
         let aux = new Polygon("void", array_aux);
         this.polygons.push(aux);
+        this.ctx.fillStyle = this.back_color;
+        this.ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     
     append_ball(new_ball: Ball){
@@ -454,7 +502,7 @@ class Universe {
     }
 
     animate_world = () => {
-        this.ctx.fillStyle = "white";
+        this.ctx.fillStyle = this.back_color;
         this.ctx.fillRect(0, 0, canvas.width, canvas.height);
         for(let i = 0; i < this.balls.length; i++){
             for(let j = 0; j < this.polygons.length; j++){
@@ -528,10 +576,11 @@ el.addEventListener("click", (e) => {
 
 var GROWING;
 var animation_on = false;
+var background_color = "black";
 
-var ball_1 = new Ball(20, canvas.width/2, canvas.height/2, 3, -2, 2, ctx, 0.4);
+var ball_1 = new Ball(`rgb(255, 255, 255)`, `rgb(248, 50, 255)`, 20, canvas.width/2, canvas.height/2, 3, -2, 2, ctx, 0.4);
 
-let uni = new Universe(ctx, canvas.width, canvas.height);
+let uni = new Universe(ctx, canvas.width, canvas.height, background_color);
 
 let ball_bigger_size = 300
 let vel = 0.008;
@@ -540,7 +589,7 @@ let num_of_points_for_circle = 100;
 let num_of_ball = 13
 
 for(let i=1; i <= num_of_ball; i++){
-    let static_ball = new CircleAsPolygon(canvas.width/2, canvas.height/2, ball_bigger_size-15*i, "void", true, vel*i/100, whole_s, num_of_points_for_circle-i*2)
+    let static_ball = new CircleAsPolygon(canvas.width/2, canvas.height/2, ball_bigger_size-15*i, "void", true, vel*i/80, whole_s, num_of_points_for_circle-i*2)
     uni.append_circle(static_ball);
 }
 
