@@ -44,10 +44,12 @@ var Polygon = /** @class */ (function () {
     return Polygon;
 }());
 var CircleAsPolygon = /** @class */ (function () {
-    function CircleAsPolygon(pos_x, pos_y, radius, color, whole, vel, whole_size, num_points) {
+    function CircleAsPolygon(pos_x, pos_y, radius, color, whole, vel, whole_size, num_points, start_rgb, end_rgb) {
         if (whole === void 0) { whole = true; }
         if (whole_size === void 0) { whole_size = 5; }
         if (num_points === void 0) { num_points = 100; }
+        if (start_rgb === void 0) { start_rgb = [0, 0, 255]; }
+        if (end_rgb === void 0) { end_rgb = [0, 255, 0]; }
         this.whole = whole;
         this.x_pos = pos_x;
         this.y_pos = pos_y;
@@ -57,6 +59,8 @@ var CircleAsPolygon = /** @class */ (function () {
         this.num_points = num_points;
         this.whole_size = whole_size;
         this.thetas_list = [];
+        this.start_color = start_rgb;
+        this.end_color = end_rgb;
         this.getTheta();
         this.getDots();
     }
@@ -111,6 +115,20 @@ var CircleAsPolygon = /** @class */ (function () {
         }
     };
     CircleAsPolygon.prototype.draw_it = function (context) {
+        var tx_r, tx_g, tx_b;
+        // if(this.whole === true){
+        tx_r = (this.end_color[0] - this.start_color[0]) / (this.dots.length - 1);
+        tx_g = (this.end_color[1] - this.start_color[1]) / (this.dots.length - 1);
+        tx_b = (this.end_color[2] - this.start_color[2]) / (this.dots.length - 1);
+        // } else {
+        //     tx_r = (this.end_color[0] - this.start_color[0])/this.num_points
+        //     tx_g = (this.end_color[1] - this.start_color[1])/this.num_points
+        //     tx_b = (this.end_color[2] - this.start_color[2])/this.num_points
+        // }
+        var actual_r = this.start_color[0];
+        var actual_g = this.start_color[1];
+        var actual_b = this.start_color[2];
+        console.log("Start color = " + actual_r + ", " + actual_g + ", " + actual_b);
         if (this.dots.length < 2) {
             console.warn("Polygon needs at least two points to be drawn.");
             return;
@@ -122,9 +140,13 @@ var CircleAsPolygon = /** @class */ (function () {
             context.beginPath();
             context.moveTo(this.dots[i - 1].x, this.dots[i - 1].y);
             context.lineTo(this.dots[i].x, this.dots[i].y);
-            context.strokeStyle = "rgb(".concat(Math.floor(2 * i), " ").concat(Math.floor(255 - 1 * i), " ").concat(Math.floor(255 - 4 * i));
+            context.strokeStyle = "rgb(".concat(Math.floor(actual_r), " ").concat(Math.floor(actual_g), " ").concat(Math.floor(actual_b));
+            actual_r += tx_r;
+            actual_g += tx_g;
+            actual_b += tx_b;
             context.stroke();
         }
+        console.log("End color = " + actual_r + ", " + actual_g + ", " + actual_b);
         // Fechar o polígono ligando o último ponto ao primeiro
         if (this.whole === false) {
             context.closePath();
@@ -166,7 +188,7 @@ var CircleAsPolygon = /** @class */ (function () {
 var Ball = /** @class */ (function () {
     function Ball(border_col, fill_col, radius, x, y, line_width, x_vector, y_vector, ctx_out, growing_v, how_many_shadows) {
         if (growing_v === void 0) { growing_v = 0.5; }
-        if (how_many_shadows === void 0) { how_many_shadows = 10; }
+        if (how_many_shadows === void 0) { how_many_shadows = 20; }
         this.fill_color = fill_col;
         this.border_color = border_col;
         this.radius = radius;
@@ -184,7 +206,7 @@ var Ball = /** @class */ (function () {
     }
     Ball.prototype.create_shadow_list = function () {
         for (var i = 0; i < this.shadow_num; i++) {
-            this.shadow_pos_list.push(new Dot(0, 0));
+            this.shadow_pos_list.push(new Dot(this.x, this.y));
         }
     };
     Ball.prototype.update_shadow_list = function () {
@@ -209,7 +231,7 @@ var Ball = /** @class */ (function () {
         for (var i = this.shadow_pos_list.length - 1; i >= 0; i--) { // Acessando os ultimos primeiro
             this.ctx.beginPath();
             this.ctx.lineWidth = this.line_width;
-            this.ctx.arc(this.shadow_pos_list[i].x, this.shadow_pos_list[i].y, this.radius, 0, Math.PI * 2, true);
+            this.ctx.arc(this.shadow_pos_list[i].x, this.shadow_pos_list[i].y, this.radius - i, 0, Math.PI * 2, true);
             this.ctx.fillStyle = "white";
             this.ctx.fill();
             this.ctx.strokeStyle = this.border_color;
@@ -430,6 +452,29 @@ var Universe = /** @class */ (function () {
     };
     return Universe;
 }());
+function get_color_from_rgb(color) {
+    var r_string = "";
+    var g_string = "";
+    var b_string = "";
+    var comma_counter = 0;
+    for (var i = 0; i < color.length; i++) {
+        if (color[i] != "(" && color[i] != ")" && color[i] != "r" && color[i] != "g" && color[i] != "b" && color[i] != " ") {
+            if (color[i] == ",") {
+                comma_counter++;
+            }
+            else if (comma_counter == 0) {
+                r_string += color[i];
+            }
+            else if (comma_counter == 1) {
+                g_string += color[i];
+            }
+            else if (comma_counter == 2) {
+                b_string += color[i];
+            }
+        }
+    }
+    return [Number(r_string), Number(g_string), Number(b_string)];
+}
 function begin_animation() {
     animation_on = true;
     GROWING = document.getElementById("checkbox_growing");
@@ -471,8 +516,10 @@ var vel = 0.008;
 var whole_s = 7;
 var num_of_points_for_circle = 100;
 var num_of_ball = 13;
+var begin_color = get_color_from_rgb("rgb(255, 0, 234)");
+var end_color = get_color_from_rgb("rgb(251, 255, 0)");
 for (var i = 1; i <= num_of_ball; i++) {
-    var static_ball = new CircleAsPolygon(canvas.width / 2, canvas.height / 2, ball_bigger_size - 15 * i, "void", true, vel * i / 80, whole_s, num_of_points_for_circle - i * 2);
+    var static_ball = new CircleAsPolygon(canvas.width / 2, canvas.height / 2, ball_bigger_size - 15 * i, "void", true, vel * i / 80, whole_s, num_of_points_for_circle - i * 2, begin_color, end_color);
     uni.append_circle(static_ball);
 }
 ball_1.draw_it();

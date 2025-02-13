@@ -67,8 +67,10 @@ class CircleAsPolygon{
     velocity: number;
     num_points: number;
     whole_size: number;
+    start_color: number[]; // rgb
+    end_color: number[]; // rgb `rgb(0, 255, 0)`
 
-    constructor(pos_x: number, pos_y: number, radius:number, color: string, whole: boolean = true, vel: number, whole_size: number=5, num_points: number=100){
+    constructor(pos_x: number, pos_y: number, radius:number, color: string, whole: boolean = true, vel: number, whole_size: number=5, num_points: number=100, start_rgb: number[]=[0,0,255], end_rgb: number[]=[0,255,0],){
         this.whole = whole;
         this.x_pos = pos_x;
         this.y_pos = pos_y;
@@ -78,6 +80,8 @@ class CircleAsPolygon{
         this.num_points = num_points;
         this.whole_size = whole_size;
         this.thetas_list = [];
+        this.start_color = start_rgb;
+        this.end_color = end_rgb;
         this.getTheta();
         this.getDots();
     }
@@ -148,6 +152,23 @@ class CircleAsPolygon{
     
 
     draw_it(context: CanvasRenderingContext2D) {
+        let tx_r:number, tx_g:number, tx_b: number;
+        // if(this.whole === true){
+        tx_r = (this.end_color[0] - this.start_color[0])/(this.dots.length-1)
+        tx_g = (this.end_color[1] - this.start_color[1])/(this.dots.length-1)
+        tx_b = (this.end_color[2] - this.start_color[2])/(this.dots.length-1)
+        // } else {
+        //     tx_r = (this.end_color[0] - this.start_color[0])/this.num_points
+        //     tx_g = (this.end_color[1] - this.start_color[1])/this.num_points
+        //     tx_b = (this.end_color[2] - this.start_color[2])/this.num_points
+        // }
+
+        let actual_r = this.start_color[0];
+        let actual_g = this.start_color[1];
+        let actual_b = this.start_color[2];
+
+        console.log("Start color = " + actual_r + ", " + actual_g + ", " + actual_b)
+
         if (this.dots.length < 2) {
             console.warn("Polygon needs at least two points to be drawn.");
             return;
@@ -161,9 +182,15 @@ class CircleAsPolygon{
             context.beginPath();
             context.moveTo(this.dots[i-1].x, this.dots[i-1].y)
             context.lineTo(this.dots[i].x, this.dots[i].y);
-            context.strokeStyle = `rgb(${Math.floor(2 * i)} ${Math.floor(255 - 1 * i)} ${Math.floor(255 - 4 * i)}`;
+            context.strokeStyle = `rgb(${Math.floor(actual_r)} ${Math.floor(actual_g)} ${Math.floor(actual_b)}`;
+            
+            actual_r += tx_r;
+            actual_g += tx_g;
+            actual_b += tx_b;
+
             context.stroke();
           }
+          console.log("End color = " + actual_r + ", " + actual_g + ", " + actual_b)
       
           // Fechar o polígono ligando o último ponto ao primeiro
           if(this.whole === false){
@@ -225,7 +252,7 @@ class Ball {
     shadow_pos_list: Array<Dot>;
     shadow_num: number;
 
-    constructor(border_col: string, fill_col:string, radius: number, x: number, y: number, line_width: number, x_vector: number, y_vector: number, ctx_out: CanvasRenderingContext2D, growing_v: number = 0.5, how_many_shadows: number=10){
+    constructor(border_col: string, fill_col:string, radius: number, x: number, y: number, line_width: number, x_vector: number, y_vector: number, ctx_out: CanvasRenderingContext2D, growing_v: number = 0.5, how_many_shadows: number=20){
         this.fill_color = fill_col;
         this.border_color = border_col;
         this.radius = radius;
@@ -245,7 +272,7 @@ class Ball {
 
     create_shadow_list(){
         for(let i=0; i < this.shadow_num; i++){
-            this.shadow_pos_list.push(new Dot(0, 0));
+            this.shadow_pos_list.push(new Dot(this.x, this.y));
         }
     }
 
@@ -274,7 +301,7 @@ class Ball {
         for(let i=this.shadow_pos_list.length-1; i>=0; i--){// Acessando os ultimos primeiro
             this.ctx.beginPath();
             this.ctx.lineWidth = this.line_width;
-            this.ctx.arc(this.shadow_pos_list[i].x, this.shadow_pos_list[i].y, this.radius, 0, Math.PI * 2, true);
+            this.ctx.arc(this.shadow_pos_list[i].x, this.shadow_pos_list[i].y, this.radius-i, 0, Math.PI * 2, true);
             this.ctx.fillStyle = "white";
             this.ctx.fill();
             this.ctx.strokeStyle = this.border_color;
@@ -533,6 +560,27 @@ class Universe {
     }
 }
 
+function get_color_from_rgb(color: string){
+    let r_string: string = "";
+    let g_string: string = "";
+    let b_string: string = "";
+    let comma_counter = 0;
+    for(let i = 0; i < color.length; i++){
+        if(color[i] != "(" && color[i] != ")" && color[i] != "r" && color[i] != "g" && color[i] != "b" && color[i] != " "){
+            if(color[i] == ","){
+                comma_counter++;
+            } else if(comma_counter == 0){
+                r_string += color[i];
+            } else if(comma_counter == 1){
+                g_string += color[i];
+            } else if(comma_counter == 2){
+                b_string += color[i];
+            }
+        }
+    }
+    return [Number(r_string), Number(g_string), Number(b_string)]
+}
+
 function begin_animation(){
     animation_on = true;
     GROWING = document.getElementById("checkbox_growing");
@@ -586,10 +634,12 @@ let ball_bigger_size = 300
 let vel = 0.008;
 let whole_s = 7;
 let num_of_points_for_circle = 100;
-let num_of_ball = 13
+let num_of_ball = 13;
+let begin_color = get_color_from_rgb("rgb(255, 0, 234)");
+let end_color = get_color_from_rgb("rgb(251, 255, 0)");
 
 for(let i=1; i <= num_of_ball; i++){
-    let static_ball = new CircleAsPolygon(canvas.width/2, canvas.height/2, ball_bigger_size-15*i, "void", true, vel*i/80, whole_s, num_of_points_for_circle-i*2)
+    let static_ball = new CircleAsPolygon(canvas.width/2, canvas.height/2, ball_bigger_size-15*i, "void", true, vel*i/80, whole_s, num_of_points_for_circle-i*2, begin_color, end_color)
     uni.append_circle(static_ball);
 }
 
