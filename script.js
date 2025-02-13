@@ -44,46 +44,69 @@ var Polygon = /** @class */ (function () {
     return Polygon;
 }());
 var CircleAsPolygon = /** @class */ (function () {
-    function CircleAsPolygon(pos_x, pos_y, radius, color, whole, vel, whole_size) {
+    function CircleAsPolygon(pos_x, pos_y, radius, color, whole, vel, whole_size, num_points) {
         if (whole === void 0) { whole = true; }
         if (whole_size === void 0) { whole_size = 5; }
+        if (num_points === void 0) { num_points = 100; }
         this.whole = whole;
         this.x_pos = pos_x;
         this.y_pos = pos_y;
         this.rad = radius;
         this.velocity = vel;
         this.color = color;
+        this.num_points = num_points;
         this.whole_size = whole_size;
         this.thetas_list = [];
-        this.getTheta(100);
+        this.getTheta();
         this.getDots();
     }
     CircleAsPolygon.prototype.rotate = function () {
+        var fix_problem = 0.3;
+        this.dots[this.dots.length - 2].x = this.x_pos + (this.rad - fix_problem) * Math.cos(this.thetas_list[this.thetas_list.length - 1] + this.velocity);
+        this.dots[this.dots.length - 2].y = this.y_pos + (this.rad - fix_problem) * Math.sin(this.thetas_list[this.thetas_list.length - 1] + this.velocity);
+        this.dots[this.dots.length - 1].x = this.x_pos + (this.rad + fix_problem) * Math.cos(this.thetas_list[this.thetas_list.length - 1] + this.velocity);
+        this.dots[this.dots.length - 1].y = this.y_pos + (this.rad + fix_problem) * Math.sin(this.thetas_list[this.thetas_list.length - 1] + this.velocity);
+        this.dots[0].x = this.x_pos + (this.rad - fix_problem) * Math.cos(this.thetas_list[0] + this.velocity);
+        this.dots[0].y = this.y_pos + (this.rad - fix_problem) * Math.sin(this.thetas_list[0] + this.velocity);
+        this.dots[1].x = this.x_pos + (this.rad + fix_problem) * Math.cos(this.thetas_list[0] + this.velocity);
+        this.dots[1].y = this.y_pos + (this.rad + fix_problem) * Math.sin(this.thetas_list[0] + this.velocity);
         for (var i = 0; i < this.thetas_list.length; i++) {
             this.thetas_list[i] += this.velocity;
-            this.dots[i].x = this.x_pos + this.rad * Math.cos(this.thetas_list[i]);
-            this.dots[i].y = this.y_pos + this.rad * Math.sin(this.thetas_list[i]);
+            this.dots[i + 2].x = this.x_pos + this.rad * Math.cos(this.thetas_list[i]);
+            this.dots[i + 2].y = this.y_pos + this.rad * Math.sin(this.thetas_list[i]);
         }
     };
     CircleAsPolygon.prototype.getDots = function () {
         var points = [];
+        var fix_problem = 0.3;
+        var x_0 = this.x_pos + (this.rad - fix_problem) * Math.cos(this.thetas_list[0]);
+        var y_0 = this.y_pos + (this.rad - fix_problem) * Math.sin(this.thetas_list[0]);
+        var x_1 = this.x_pos + (this.rad + fix_problem) * Math.cos(this.thetas_list[0]);
+        var y_1 = this.y_pos + (this.rad + fix_problem) * Math.sin(this.thetas_list[0]);
+        points.push(new Dot(x_0, y_0));
+        points.push(new Dot(x_1, y_1));
         for (var i = 0; i < this.thetas_list.length; i++) {
             var x = this.x_pos + this.rad * Math.cos(this.thetas_list[i]);
             var y = this.y_pos + this.rad * Math.sin(this.thetas_list[i]);
             points.push(new Dot(x, y));
         }
+        var x_last = this.x_pos + (this.rad - fix_problem) * Math.cos(this.thetas_list[this.thetas_list.length - 1]);
+        var y_last = this.y_pos + (this.rad - fix_problem) * Math.sin(this.thetas_list[this.thetas_list.length - 1]);
+        var x_last_2 = this.x_pos + (this.rad + fix_problem) * Math.cos(this.thetas_list[this.thetas_list.length - 1]);
+        var y_last_2 = this.y_pos + (this.rad + fix_problem) * Math.sin(this.thetas_list[this.thetas_list.length - 1]);
+        points.push(new Dot(x_last, y_last));
+        points.push(new Dot(x_last_2, y_last_2));
         this.dots = points;
     };
-    CircleAsPolygon.prototype.getTheta = function (numPoints) {
-        if (numPoints === void 0) { numPoints = 100; }
+    CircleAsPolygon.prototype.getTheta = function () {
         if (this.whole === true) {
-            for (var i = 0; i < numPoints - this.whole_size; i++) {
-                this.thetas_list.push((i / numPoints) * 2 * Math.PI);
+            for (var i = 0; i < this.num_points - this.whole_size; i++) {
+                this.thetas_list.push((i / this.num_points) * 2 * Math.PI);
             }
         }
         else {
-            for (var i = 0; i < numPoints; i++) {
-                this.thetas_list.push((i / numPoints) * 2 * Math.PI);
+            for (var i = 0; i < this.num_points; i++) {
+                this.thetas_list.push((i / this.num_points) * 2 * Math.PI);
             }
         }
     };
@@ -93,6 +116,7 @@ var CircleAsPolygon = /** @class */ (function () {
             return;
         }
         context.beginPath();
+        context.lineWidth = 3;
         // Mover para o primeiro ponto
         context.moveTo(this.dots[0].x, this.dots[0].y);
         // Criar linhas para os outros pontos
@@ -138,7 +162,8 @@ var CircleAsPolygon = /** @class */ (function () {
 //     return points;
 // }
 var Ball = /** @class */ (function () {
-    function Ball(radius, x, y, line_width, x_vector, y_vector, ctx_out) {
+    function Ball(radius, x, y, line_width, x_vector, y_vector, ctx_out, growing_v) {
+        if (growing_v === void 0) { growing_v = 0.5; }
         this.radius = radius;
         this.x = x;
         this.y = y;
@@ -147,6 +172,7 @@ var Ball = /** @class */ (function () {
         this.vet_y = y_vector;
         this.gravity = 0.02;
         this.ctx = ctx_out;
+        this.growing_value = growing_v;
     }
     Ball.prototype.draw_it = function () {
         this.ctx.beginPath();
@@ -270,16 +296,20 @@ var Ball = /** @class */ (function () {
             }
         }
         if (collisionNormals.length === 1) {
-            // this.radius += 0.5;
-            // this.x -= this.vet_x
-            // this.y -= this.vet_y
+            if (GROWING.checked) {
+                this.radius += this.growing_value;
+            }
+            this.x -= this.vet_x;
+            this.y -= this.vet_y;
             // Colisão com apenas uma borda (reflexão normal)
             this.reflect_velocity(collisionNormals[0]);
         }
         else if (collisionNormals.length > 1) {
-            // this.radius += 0.5;
-            // this.x -= this.vet_x
-            // this.y -= this.vet_y
+            if (GROWING.checked) {
+                this.radius += this.growing_value;
+            }
+            this.x -= this.vet_x;
+            this.y -= this.vet_y;
             // Colisão com duas bordas ao mesmo tempo
             var avgNormal = {
                 x: collisionNormals.reduce(function (sum, n) { return sum + n.x; }, 0) / collisionNormals.length,
@@ -314,7 +344,7 @@ var Universe = /** @class */ (function () {
                     _this.circles[x].draw_it(_this.ctx);
                     _this.circles[x].rotate();
                     var dist_MidBigBall2SmallBall = distance(new Dot(_this.circles[x].x_pos, _this.circles[x].y_pos), new Dot(_this.balls[i].x, _this.balls[i].y));
-                    if (dist_MidBigBall2SmallBall > (_this.circles[x].rad - _this.balls[i].radius + 7)) {
+                    if (dist_MidBigBall2SmallBall > (_this.circles[x].rad - _this.balls[i].radius + 2)) {
                         _this.circles.pop();
                     }
                     // Se a distancia do centro da bola maior, até a bolinha for maior do que seu raio + o raio da bolinha, ela esta fora
@@ -362,6 +392,7 @@ var Universe = /** @class */ (function () {
 }());
 function begin_animation() {
     animation_on = true;
+    GROWING = document.getElementById("checkbox_growing");
     uni.animate_world();
 }
 function create_polygon() {
@@ -373,10 +404,10 @@ var canvas = document.createElement("canvas");
 canvas.id = "canvas-giratorio";
 canvas.style.backgroundColor = "white";
 canvas.style.border = "1px solid black";
-canvas.style.width = "800px";
+canvas.style.width = "1000px";
 canvas.style.height = "1000px";
 var ctx = canvas.getContext("2d");
-canvas.width = 800;
+canvas.width = 1000;
 canvas.height = 1000;
 ctx.imageSmoothingEnabled = false;
 document.body.appendChild(canvas);
@@ -390,11 +421,17 @@ el.addEventListener("click", function (e) {
     var dot = new Dot(x, y);
     dots_new_polygon.push(dot);
 });
+var GROWING;
 var animation_on = false;
-var ball_1 = new Ball(20, canvas.width / 2, canvas.height / 2, 3, 1.5, 1.5, ctx);
+var ball_1 = new Ball(20, canvas.width / 2, canvas.height / 2, 3, -2, 2, ctx, 0.4);
 var uni = new Universe(ctx, canvas.width, canvas.height);
-for (var i = 1; i < 5; i++) {
-    var static_ball = new CircleAsPolygon(canvas.width / 2, canvas.height / 2, 200 - 20 * i, "void", true, 0.007 * i / 2, 15);
+var ball_bigger_size = 300;
+var vel = 0.008;
+var whole_s = 7;
+var num_of_points_for_circle = 100;
+var num_of_ball = 13;
+for (var i = 1; i <= num_of_ball; i++) {
+    var static_ball = new CircleAsPolygon(canvas.width / 2, canvas.height / 2, ball_bigger_size - 15 * i, "void", true, vel * i / 100, whole_s, num_of_points_for_circle - i * 2);
     uni.append_circle(static_ball);
 }
 ball_1.draw_it();
