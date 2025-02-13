@@ -81,22 +81,38 @@ class CircleAsPolygon{
     }
 
     rotate(){
+        this.dots[0].x = this.x_pos + (this.rad-3) * Math.cos(this.thetas_list[0] + this.velocity);
+        this.dots[0].y = this.y_pos + (this.rad-3) * Math.sin(this.thetas_list[0] + this.velocity);
+
         for(let i=0; i<this.thetas_list.length; i++){
             this.thetas_list[i] += this.velocity;
-            this.dots[i].x = this.x_pos + this.rad * Math.cos(this.thetas_list[i]);
-            this.dots[i].y = this.y_pos + this.rad * Math.sin(this.thetas_list[i]);
+            this.dots[i+1].x = this.x_pos + this.rad * Math.cos(this.thetas_list[i]);
+            this.dots[i+1].y = this.y_pos + this.rad * Math.sin(this.thetas_list[i]);
         }
+
+        this.dots[this.dots.length-1].x = this.x_pos + (this.rad-3) * Math.cos(this.thetas_list[this.thetas_list.length-1] + this.velocity);
+        this.dots[this.dots.length-1].y = this.y_pos + (this.rad-3) * Math.sin(this.thetas_list[this.thetas_list.length-1] + this.velocity);
     }
 
     getDots(){
-        let points = [];
+        let points = []; 
+
+        let x_0 = this.x_pos + (this.rad-3) * Math.cos(this.thetas_list[0]);
+        let y_0 = this.y_pos + (this.rad-3) * Math.sin(this.thetas_list[0]);
+        points.push(new Dot(x_0, y_0));
+
         for (let i = 0; i < this.thetas_list.length; i++) {
-            let theta = (i / this.thetas_list.length) * 2 * Math.PI;
-            let x = this.x_pos + this.rad * Math.cos(theta);
-            let y = this.y_pos + this.rad * Math.sin(theta);
+            // let theta = (i / this.thetas_list.length) * 2 * Math.PI;
+
+            let x = this.x_pos + this.rad * Math.cos(this.thetas_list[i]);
+            let y = this.y_pos + this.rad * Math.sin(this.thetas_list[i]);
             
             points.push(new Dot(x, y));
         }
+        
+        let x_last = this.x_pos + (this.rad-3) * Math.cos(this.thetas_list[this.thetas_list.length-1]);
+        let y_last = this.y_pos + (this.rad-3) * Math.sin(this.thetas_list[this.thetas_list.length-1]);
+        points.push(new Dot(x_last, y_last));
         this.dots = points;
     }
 
@@ -145,27 +161,33 @@ class CircleAsPolygon{
     }
 }
 
-function getCircleBorderPoints(xc: number, yc: number, radius: number, numPoints: number = 100, whole: boolean = false){
-    let points = [];
-    if(whole === true){
-        for (let i = 0; i < numPoints-3; i++) {
-            let theta = (i / numPoints) * 2 * Math.PI;
-            let x = xc + radius * Math.cos(theta);
-            let y = yc + radius * Math.sin(theta);
+// function getCircleBorderPoints(xc: number, yc: number, radius: number, numPoints: number = 100, whole: boolean = false){
+//     let points = [];
+//     if(whole === true){
+        
+//         for (let i = 0; i < numPoints-3; i++) {
+//             let theta = (i / numPoints) * 2 * Math.PI;  
+//             let x = xc + radius * Math.cos(theta);
+//             let y = yc + radius * Math.sin(theta);
             
-            points.push(new Dot(x, y));
-        }
-    } else {
-        for (let i = 0; i < numPoints; i++) {
-            let theta = (i / numPoints) * 2 * Math.PI;
-            let x = xc + radius * Math.cos(theta);
-            let y = yc + radius * Math.sin(theta);
+//             points.push(new Dot(x, y));
+//         }
+//         let theta_last = (0 / numPoints) * 2 * Math.PI;  
+//         let x_last = xc + radius-3 * Math.cos(theta_last);
+//         let y_last = yc + radius-3 * Math.sin(theta_last);
+//         points.push(new Dot(x_last, y_last));
+
+//     } else {
+//         for (let i = 0; i < numPoints; i++) {
+//             let theta = (i / numPoints) * 2 * Math.PI;
+//             let x = xc + radius * Math.cos(theta);
+//             let y = yc + radius * Math.sin(theta);
             
-            points.push(new Dot(x, y));
-        }
-    }
-    return points;
-}
+//             points.push(new Dot(x, y));
+//         }
+//     }
+//     return points;
+// }
 
 class Ball {
     radius: number;
@@ -280,6 +302,7 @@ class Ball {
         let Pprojx = A.x + tx * VectorABx;
         let Pprojy = A.y + tx * VectorABy;
         let distance = Math.sqrt((Pprojx - this.x) ** 2 + (Pprojy - this.y) ** 2);
+        // let distance_vet = Math.sqrt((0 - this.vet_x) ** 2 + (0 - this.vet_y) ** 2)
         return distance < this.radius + this.line_width / 2;
     }
     
@@ -329,9 +352,15 @@ class Ball {
             }
         }
         if (collisionNormals.length === 1) {
+            // this.radius += 0.5;
+            // this.x -= this.vet_x
+            // this.y -= this.vet_y
             // Colisão com apenas uma borda (reflexão normal)
             this.reflect_velocity(collisionNormals[0]);
         } else if (collisionNormals.length > 1) {
+            // this.radius += 0.5;
+            // this.x -= this.vet_x
+            // this.y -= this.vet_y
             // Colisão com duas bordas ao mesmo tempo
             let avgNormal = {
                 x: collisionNormals.reduce((sum, n) => sum + n.x, 0) / collisionNormals.length,
@@ -470,12 +499,12 @@ el.addEventListener("click", (e) => {
 
 var animation_on = false;
 
-var ball_1 = new Ball(15, canvas.width/2, canvas.height/2, 3, 1.6, 1.6, ctx);
+var ball_1 = new Ball(20, canvas.width/2, canvas.height/2, 3, 1.5, 1.5, ctx);
 
 let uni = new Universe(ctx, canvas.width, canvas.height);
 
-for(let i =1; i < 7; i++){
-    let static_ball = new CircleAsPolygon(canvas.width/2, canvas.height/2, 300-30*i, "void", true, 0.0001*i, 8)
+for(let i =1; i < 5; i++){
+    let static_ball = new CircleAsPolygon(canvas.width/2, canvas.height/2, 200-20*i, "void", true, 0.007*i/2, 15)
     uni.append_circle(static_ball);
 }
 
