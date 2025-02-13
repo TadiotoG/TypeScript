@@ -355,6 +355,7 @@ var Ball = /** @class */ (function () {
             }
         }
         if (collisionNormals.length === 1) {
+            playSound();
             if (GROWING.checked) {
                 this.radius += this.growing_value;
             }
@@ -367,6 +368,7 @@ var Ball = /** @class */ (function () {
             if (GROWING.checked) {
                 this.radius += this.growing_value;
             }
+            playSound();
             this.x -= this.vet_x;
             this.y -= this.vet_y;
             // Colisão com duas bordas ao mesmo tempo
@@ -485,6 +487,10 @@ function create_polygon() {
     uni.append_polygon(new_p);
     dots_new_polygon = [];
 }
+var sound = new Audio("Sounds/som.mp3");
+function playSound() {
+    sound.play().catch(function (error) { return console.error("Erro ao tocar som:", error); });
+}
 var canvas = document.createElement("canvas");
 canvas.id = "canvas-giratorio";
 canvas.style.backgroundColor = "white";
@@ -509,7 +515,7 @@ el.addEventListener("click", function (e) {
 var GROWING;
 var animation_on = false;
 var background_color = "black";
-var ball_1 = new Ball("rgb(255, 255, 255)", "rgb(248, 50, 255)", 20, canvas.width / 2, canvas.height / 2, 3, -2, 2, ctx, 0.4);
+var ball_1 = new Ball("rgb(255, 255, 255)", "rgb(248, 50, 255)", 20, canvas.width / 2, canvas.height / 2, 3, -2, 2, ctx, 0.4, 20);
 var uni = new Universe(ctx, canvas.width, canvas.height, background_color);
 var ball_bigger_size = 300;
 var vel = 0.008;
@@ -517,7 +523,7 @@ var whole_s = 7;
 var num_of_points_for_circle = 100;
 var num_of_ball = 13;
 var begin_color = get_color_from_rgb("rgb(255, 0, 234)");
-var end_color = get_color_from_rgb("rgb(251, 255, 0)");
+var end_color = get_color_from_rgb("rgb(3, 228, 179)");
 for (var i = 1; i <= num_of_ball; i++) {
     var static_ball = new CircleAsPolygon(canvas.width / 2, canvas.height / 2, ball_bigger_size - 15 * i, "void", true, vel * i / 80, whole_s, num_of_points_for_circle - i * 2, begin_color, end_color);
     uni.append_circle(static_ball);
