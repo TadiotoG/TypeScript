@@ -81,38 +81,21 @@ class CircleAsPolygon{
     }
 
     rotate(){
-        this.dots[0].x = this.x_pos + (this.rad-3) * Math.cos(this.thetas_list[0] + this.velocity);
-        this.dots[0].y = this.y_pos + (this.rad-3) * Math.sin(this.thetas_list[0] + this.velocity);
-
         for(let i=0; i<this.thetas_list.length; i++){
             this.thetas_list[i] += this.velocity;
-            this.dots[i+1].x = this.x_pos + this.rad * Math.cos(this.thetas_list[i]);
-            this.dots[i+1].y = this.y_pos + this.rad * Math.sin(this.thetas_list[i]);
+            this.dots[i].x = this.x_pos + this.rad * Math.cos(this.thetas_list[i]);
+            this.dots[i].y = this.y_pos + this.rad * Math.sin(this.thetas_list[i]);
         }
-
-        this.dots[this.dots.length-1].x = this.x_pos + (this.rad-3) * Math.cos(this.thetas_list[this.thetas_list.length-1] + this.velocity);
-        this.dots[this.dots.length-1].y = this.y_pos + (this.rad-3) * Math.sin(this.thetas_list[this.thetas_list.length-1] + this.velocity);
     }
 
     getDots(){
         let points = []; 
-
-        let x_0 = this.x_pos + (this.rad-3) * Math.cos(this.thetas_list[0]);
-        let y_0 = this.y_pos + (this.rad-3) * Math.sin(this.thetas_list[0]);
-        points.push(new Dot(x_0, y_0));
-
         for (let i = 0; i < this.thetas_list.length; i++) {
-            // let theta = (i / this.thetas_list.length) * 2 * Math.PI;
-
             let x = this.x_pos + this.rad * Math.cos(this.thetas_list[i]);
             let y = this.y_pos + this.rad * Math.sin(this.thetas_list[i]);
             
             points.push(new Dot(x, y));
         }
-        
-        let x_last = this.x_pos + (this.rad-3) * Math.cos(this.thetas_list[this.thetas_list.length-1]);
-        let y_last = this.y_pos + (this.rad-3) * Math.sin(this.thetas_list[this.thetas_list.length-1]);
-        points.push(new Dot(x_last, y_last));
         this.dots = points;
     }
 
