@@ -448,7 +448,7 @@ var Universe = /** @class */ (function () {
                     _this.circles[x].draw_it(_this.ctx);
                     _this.circles[x].rotate();
                     var dist_MidBigBall2SmallBall = distance(new Dot(_this.circles[x].x_pos, _this.circles[x].y_pos), new Dot(_this.balls[i].x, _this.balls[i].y));
-                    if (dist_MidBigBall2SmallBall > (_this.circles[x].rad - _this.balls[i].radius * 0.7)) { // Se a distancia do centro da bola maior, até a bolinha for maior do que seu raio + o raio da bolinha, ela esta fora
+                    if (dist_MidBigBall2SmallBall > (_this.circles[x].rad - _this.balls[i].radius * 0.8)) { // Se a distancia do centro da bola maior, até a bolinha for maior do que seu raio + o raio da bolinha, ela esta fora
                         _this.circles.pop();
                     }
                 }
@@ -538,7 +538,7 @@ function create_polygon() {
 var temporizador;
 var audio = new Audio("Sounds/Harry_Styles_AsItWas.mp3");
 function play_music(duracaoEmSegundos) {
-    if (duracaoEmSegundos === void 0) { duracaoEmSegundos = 1; }
+    if (duracaoEmSegundos === void 0) { duracaoEmSegundos = 0.7; }
     if (audio.paused) {
         audio.currentTime = 0;
         audio.play();
@@ -575,12 +575,12 @@ var GROWING;
 var animation_on = false;
 var background_color = "black";
 var sound_on = false;
-var ball_1 = new Ball("rgb(255, 255, 255)", "rgb(248, 50, 255)", 20, canvas.width / 2, canvas.height / 2, 3, 0.5, 0.5, ctx, 0.6, 20, sound_on, 0.01);
+var ball_1 = new Ball("rgb(255, 255, 255)", "rgb(248, 50, 255)", 20, canvas.width / 2, canvas.height / 2, 3, 1.7, -1.5, ctx, 0.7, 20, sound_on, 0.01);
 var uni = new Universe(ctx, canvas.width, canvas.height, background_color);
 var ball_bigger_size = 200;
-var vel = 0.05;
+var vel = 0.07;
 var whole_flag = true;
-var whole_s = 7;
+var whole_s = 9;
 var num_of_points_for_circle = 100;
 var num_of_ball = 7;
 var begin_color = get_color_from_rgb("rgb(255, 0, 234)");

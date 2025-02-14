@@ -589,7 +589,7 @@ class Universe {
 				this.circles[x].draw_it(this.ctx);
 				this.circles[x].rotate();
 				let dist_MidBigBall2SmallBall = distance(new Dot(this.circles[x].x_pos, this.circles[x].y_pos), new Dot(this.balls[i].x, this.balls[i].y))
-				if(dist_MidBigBall2SmallBall > (this.circles[x].rad - this.balls[i].radius*0.7)){// Se a distancia do centro da bola maior, até a bolinha for maior do que seu raio + o raio da bolinha, ela esta fora
+				if(dist_MidBigBall2SmallBall > (this.circles[x].rad - this.balls[i].radius*0.8)){// Se a distancia do centro da bola maior, até a bolinha for maior do que seu raio + o raio da bolinha, ela esta fora
 					this.circles.pop();
 				}
 			}
@@ -644,8 +644,8 @@ function create_polygon(){
 }
 
 let temporizador;
-const audio = new Audio("Sounds/Harry_Styles_AsItWas.mp3");
-function play_music(duracaoEmSegundos: number = 1) {
+const audio = new Audio("Sounds/TheWorstPythonEver.mp3");
+function play_music(duracaoEmSegundos: number = 0.7) {
 	if(audio.paused){
 		audio.currentTime = 0;
 		audio.play();
@@ -694,13 +694,13 @@ var animation_on = false;
 var background_color = "black";
 var sound_on = false;
 
-var ball_1 = new Ball(`rgb(255, 255, 255)`, `rgb(248, 50, 255)`, 20, canvas.width/2, canvas.height/2, 3, 0.5, 0.5, ctx, 0.6, 20, sound_on, 0.01);
+var ball_1 = new Ball(`rgb(255, 255, 255)`, `rgb(248, 50, 255)`, 20, canvas.width/2, canvas.height/2, 3, 1.7, -1.5, ctx, 0.7, 20, sound_on, 0.01);
 let uni = new Universe(ctx, canvas.width, canvas.height, background_color);
 
 let ball_bigger_size = 200
-let vel = 0.05;
+let vel = 0.07;
 let whole_flag = true;
-let whole_s = 7;
+let whole_s = 9;
 let num_of_points_for_circle = 100;
 let num_of_ball = 7;
 let begin_color = get_color_from_rgb("rgb(255, 0, 234)");
