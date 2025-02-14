@@ -434,7 +434,8 @@ var Ball = /** @class */ (function () {
     return Ball;
 }());
 var Universe = /** @class */ (function () {
-    function Universe(ctx_out, width_limit, height_limit, background_color) {
+    function Universe(ctx_out, width_limit, height_limit, background_color, pop_sound) {
+        if (pop_sound === void 0) { pop_sound = "void"; }
         var _this = this;
         this.animate_world = function () {
             _this.ctx.fillStyle = _this.back_color;
@@ -448,7 +449,10 @@ var Universe = /** @class */ (function () {
                     _this.circles[x].draw_it(_this.ctx);
                     _this.circles[x].rotate();
                     var dist_MidBigBall2SmallBall = distance(new Dot(_this.circles[x].x_pos, _this.circles[x].y_pos), new Dot(_this.balls[i].x, _this.balls[i].y));
-                    if (dist_MidBigBall2SmallBall > (_this.circles[x].rad - _this.balls[i].radius * 0.8)) { // Se a distancia do centro da bola maior, até a bolinha for maior do que seu raio + o raio da bolinha, ela esta fora
+                    if (dist_MidBigBall2SmallBall > (_this.circles[x].rad - _this.balls[i].radius * 0.9)) { // Se a distancia do centro da bola maior, até a bolinha for maior do que seu raio + o raio da bolinha, ela esta fora
+                        if (_this.pop_sound != "void") {
+                            _this.playPopSound();
+                        }
                         _this.circles.pop();
                     }
                 }
@@ -478,6 +482,7 @@ var Universe = /** @class */ (function () {
         this.polygons.push(aux);
         this.ctx.fillStyle = this.back_color;
         this.ctx.fillRect(0, 0, canvas.width, canvas.height);
+        this.pop_sound = pop_sound;
     }
     Universe.prototype.append_ball = function (new_ball) {
         // new_ball.print_info();
@@ -493,6 +498,10 @@ var Universe = /** @class */ (function () {
         // circle.print_info();
         circle.draw_it(this.ctx);
         this.circles.push(circle);
+    };
+    Universe.prototype.playPopSound = function () {
+        var sound = new Audio("Sounds/" + this.pop_sound);
+        sound.play().catch(function (error) { return console.error("Erro ao tocar som:", error); });
     };
     return Universe;
 }());
@@ -527,6 +536,9 @@ function begin_animation() {
     if (aux.checked) {
         sound_on = true;
     }
+    else {
+        sound_on = false;
+    }
     ;
     uni.animate_world();
 }
@@ -536,7 +548,7 @@ function create_polygon() {
     dots_new_polygon = [];
 }
 var temporizador;
-var audio = new Audio("Sounds/AiSeEuTePego.mp3");
+var audio = new Audio("Sounds/TheWorstPythonEver.mp3");
 function play_music(duracaoEmSegundos) {
     if (duracaoEmSegundos === void 0) { duracaoEmSegundos = 1; }
     if (audio.paused) {
@@ -554,13 +566,20 @@ var canvas = document.createElement("canvas");
 canvas.id = "canvas-giratorio";
 canvas.style.backgroundColor = "white";
 canvas.style.border = "1px solid black";
-canvas.style.width = "1000px";
+canvas.style.width = "700px";
 canvas.style.height = "1000px";
 var ctx = canvas.getContext("2d");
-canvas.width = 1000;
+canvas.width = 700;
 canvas.height = 1000;
 ctx.imageSmoothingEnabled = false;
 document.body.appendChild(canvas);
+var container = document.getElementById("container");
+if (container) {
+    container.appendChild(canvas);
+}
+else {
+    console.error("Div container não encontrada!");
+}
 var el = document.querySelector("canvas");
 var dots_new_polygon = [];
 el.addEventListener("click", function (e) {
@@ -575,21 +594,66 @@ var GROWING;
 var animation_on = false;
 var background_color = "black";
 var sound_on = false;
-var ball_1 = new Ball("rgb(255, 255, 255)", "rgb(248, 50, 255)", 40, canvas.width / 2, canvas.height / 2, 3, 1, -1.5, ctx, 3, 20, sound_on, 0.03);
-var uni = new Universe(ctx, canvas.width, canvas.height, background_color);
-var ball_bigger_size = 300;
-var vel = 0.3;
-var whole_flag = false;
-var whole_s = 9;
+var x_vet = 2;
+var y_vet = -2.5;
+var growing_value = 1.3;
+var ball_size = 10;
+var gravity = 0.02;
+var ball_bigger_size = 280;
+var vel = 0.24;
+var whole_flag = true;
+var whole_s = 14;
 var num_of_points_for_circle = 120;
-var num_of_ball = 1;
+var amount_of_circles = 1;
 var begin_color = get_color_from_rgb("rgb(255, 0, 234)");
 var end_color = get_color_from_rgb("rgb(3, 228, 179)");
-for (var i = 1; i <= num_of_ball; i++) {
-    var static_ball = new CircleAsPolygon(canvas.width / 2, canvas.height / 2, ball_bigger_size - 15 * i, "void", whole_flag, vel * i / 80, whole_s, num_of_points_for_circle - i * 2, begin_color, end_color);
+create_animation();
+get_all_configs();
+console.log("BLALBLA");
+var uni = new Universe(ctx, canvas.width, canvas.height, background_color);
+var ball_1 = new Ball("rgb(255, 255, 255)", "rgb(248, 50, 255)", ball_size, canvas.width / 2, canvas.height / 2, 3, x_vet, y_vet, ctx, growing_value, 10, sound_on, gravity);
+uni = new Universe(ctx, canvas.width, canvas.height, background_color);
+ball_1 = new Ball("rgb(255, 255, 255)", "rgb(248, 50, 255)", ball_size, canvas.width / 2, canvas.height / 2, 3, x_vet, y_vet, ctx, growing_value, 10, sound_on, gravity);
+for (var i = 1; i <= amount_of_circles; i++) {
+    var static_ball = new CircleAsPolygon(canvas.width / 2, canvas.height / 2, ball_bigger_size - 15 * i, "void", whole_flag, vel * i / 200, whole_s, num_of_points_for_circle - i * 2, begin_color, end_color);
     uni.append_circle(static_ball);
 }
 ball_1.draw_it();
-// uni.append_polygon(static_ball_2)
 uni.append_ball(ball_1);
-// uni.append_ball(ball_2);z
+function create_animation() {
+    uni = new Universe(ctx, canvas.width, canvas.height, background_color);
+    ball_1 = new Ball("rgb(255, 255, 255)", "rgb(248, 50, 255)", ball_size, canvas.width / 2, canvas.height / 2, 3, x_vet, y_vet, ctx, growing_value, 10, sound_on, gravity);
+    for (var i = 1; i <= amount_of_circles; i++) {
+        var static_ball = new CircleAsPolygon(canvas.width / 2, canvas.height / 2, ball_bigger_size - 15 * i, "void", whole_flag, vel * i / 200, whole_s, num_of_points_for_circle - i * 2, begin_color, end_color);
+        uni.append_circle(static_ball);
+    }
+    ball_1.draw_it();
+    uni.append_ball(ball_1);
+}
+ball_1.draw_it();
+function get_all_configs() {
+    var inputElement = document.getElementById("type_amount_of_circles");
+    amount_of_circles = parseFloat(inputElement.value);
+    inputElement = document.getElementById("type_ball_size");
+    ball_size = parseFloat(inputElement.value);
+    inputElement = document.getElementById("type_gravity");
+    gravity = parseFloat(inputElement.value);
+    inputElement = document.getElementById("type_growing_value");
+    growing_value = parseFloat(inputElement.value);
+    inputElement = document.getElementById("type_circle_size");
+    ball_bigger_size = parseFloat(inputElement.value);
+    inputElement = document.getElementById("type_circle_speed");
+    vel = parseFloat(inputElement.value);
+    inputElement = document.getElementById("type_size_of_wholes");
+    whole_s = parseFloat(inputElement.value);
+    var aux;
+    aux = document.getElementById("checkbox_buraco");
+    if (aux.checked) {
+        whole_flag = true;
+    }
+    else {
+        whole_flag = false;
+    }
+    ;
+    create_animation();
+}

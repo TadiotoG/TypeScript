@@ -8,32 +8,35 @@
 
 <style>
     body {
+        background: linear-gradient(0deg,grey, white) center center / cover no-repeat fixed;
+        
         text-align: center;
         align-items: center;
+    }
+
+    body > #container{
         display: flex;
-        justify-content: space-between;
-        background: linear-gradient(0deg,grey, white) center center / cover no-repeat fixed;
-        flex-direction: column;
+        justify-content: center;
+        flex-direction: row;
+        align-items: center;
     }
 
-    body > #container_buttons > .buttons {
-        padding: 10px;
-        margin: 10px;
-        font-size: 15px;
-        width: 200px;
-    }
-
-    body > #container_buttons > label {
-        font-size: 20px;
-    }
-
-    #container_buttons {
+    #container > #controles {
+        background-color: white;
+        margin: 20px;
+        padding: 20px;
+        border-radius: 20px;
+        border-style: solid;
         order: 1;
+    }
+
+    #container > * {
+        font-size: 15px;
     }
 
     #type_container{
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         justify-content: space-between;
     }
 
@@ -41,35 +44,99 @@
         width: 40px;
         text-align: center;
     }
+
+    #div_buttons {
+        margin: 20px;
+    }
+
+    #div_buttons > *{
+        margin: 10px;
+    }
+
+    .div_checkbox > * {
+        
+        margin: 10px;
+    }
+
+    .div_checkbox {
+        display: flex;
+        flex-direction: row;
+    }
+
+    #type_divs{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+    }
+
+    #type_divs > * {
+        margin: 10px;
+    }
+
 </style>
+<header>
+    <h1>Tads Balls</h1>
+</header>
 
 <body>
-    <h1>Tads Balls</h1>
-
-    <div id="container_buttons">
-        <button onclick="begin_animation()" class="buttons" id="b_02">Comecar</button>
-        <button onclick="create_polygon()" class="buttons" id="b_01">Criar poligono</button>
-        <input type="checkbox" name="Growing" id="checkbox_growing">
-        <label for="checkbox_growing">Growing Ball</label>
-        <input type="checkbox" name="music" id="checkbox_music">
-        <label for="checkbox_music">Music</label>
-
-
-        <div id="type_container">
-            <div>
-                <p>Quantidade de círculos</p>
-                <input type="number" id="amount_of_circles" value="1" class="type_box">
+    <div id="container">
+        <div id="controles">
+            <div class="div_checkbox">
+                <div>
+                    <input type="checkbox" name="Growing" id="checkbox_growing">
+                    <label for="checkbox_growing">Growing Ball</label>
+                </div>
+                <div> 
+                    <input type="checkbox" name="music" id="checkbox_music">
+                    <label for="checkbox_music">Music</label>
+                </div>
+                <div>
+                    <input type="checkbox" name="buraco" id="checkbox_buraco" checked oninput=get_all_configs()>
+                    <label for="checkbox_buraco">Buraco</label>
+                </div>
             </div>
-            <div>
-                <p>Tamanho da bola</p>
-                <input type="number" id="ball_size" value="40" class="type_box">
+
+            <div id="type_divs">
+                <div class="type_container">
+                    <div>
+                        <p>Quantidade de círculos</p>
+                        <input oninput=get_all_configs() type="number" id="type_amount_of_circles" value="1" class="type_box">
+                    </div>
+                    <div>
+                        <p>Tamanho da bola</p>
+                        <input oninput=get_all_configs() type="number" id="type_ball_size" value="10" class="type_box">
+                    </div>
+                    <div>
+                        <p>Gravidade</p>
+                        <input oninput=get_all_configs() type="number" id="type_gravity" value="0.02" class="type_box" step="0.01">
+                    </div>
+                    <div>
+                        <p>Quanto a bola cresce</p>
+                        <input oninput=get_all_configs() type="number" id="type_growing_value" value="1.3" class="type_box" step="0.1">
+                    </div>
+                </div>
+                <div class="type_container">
+                    <div>
+                        <p>Tamanho do maior circulo</p>
+                        <input oninput=get_all_configs() type="number" id="type_circle_size" value="280" class="type_box">
+                    </div>
+                    <div>
+                        <p>Velocidade dos circulos</p>
+                        <input oninput=get_all_configs() type="number" id="type_circle_speed" value="0.24" class="type_box" step="0.01">
+                    </div>
+                    <div>
+                        <p>Tamanho dos buracos</p>
+                        <input oninput=get_all_configs() type="number" id="type_size_of_wholes" value="14" class="type_box">
+                    </div>
+                </div>
             </div>
-            <div>
-                <p>Gravidade</p>
-                <input type="number" id="gravity" value="0.2" class="type_box" step="0.1">
+
+            <div id= "div_buttons">
+                <button onclick="begin_animation()" class="buttons" id="b_02">Comecar</button>
+                <button onclick="create_polygon()" class="buttons" id="b_01">Criar poligono</button>
             </div>
+
         </div>
-        
     </div>
 
     <script src="script.js"></script>
