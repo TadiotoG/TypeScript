@@ -575,7 +575,7 @@ var GROWING;
 var animation_on = false;
 var background_color = "black";
 var sound_on = false;
-var ball_1 = new Ball("rgb(255, 255, 255)", "rgb(248, 50, 255)", 20, canvas.width / 2, canvas.height / 2, 3, 0.5, 0.5, ctx, 1, 20, sound_on, 0.01);
+var ball_1 = new Ball("rgb(255, 255, 255)", "rgb(248, 50, 255)", 20, canvas.width / 2, canvas.height / 2, 3, 0.5, 0.5, ctx, 0.6, 20, sound_on, 0.01);
 var uni = new Universe(ctx, canvas.width, canvas.height, background_color);
 var ball_bigger_size = 200;
 var vel = 0.05;
