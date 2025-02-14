@@ -644,7 +644,7 @@ function create_polygon(){
 }
 
 let temporizador;
-const audio = new Audio("Sounds/TheWorstPythonEver.mp3");
+const audio = new Audio("Sounds/AiSeEuTePego.mp3");
 function play_music(duracaoEmSegundos: number = 1) {
 	if(audio.paused){
 		audio.currentTime = 0;

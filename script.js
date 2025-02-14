@@ -536,7 +536,7 @@ function create_polygon() {
     dots_new_polygon = [];
 }
 var temporizador;
-var audio = new Audio("Sounds/TheWorstPythonEver.mp3");
+var audio = new Audio("Sounds/AiSeEuTePego.mp3");
 function play_music(duracaoEmSegundos) {
     if (duracaoEmSegundos === void 0) { duracaoEmSegundos = 1; }
     if (audio.paused) {
