@@ -536,9 +536,9 @@ function create_polygon() {
     dots_new_polygon = [];
 }
 var temporizador;
-var audio = new Audio("Sounds/Harry_Styles_AsItWas.mp3");
+var audio = new Audio("Sounds/TheWorstPythonEver.mp3");
 function play_music(duracaoEmSegundos) {
-    if (duracaoEmSegundos === void 0) { duracaoEmSegundos = 0.7; }
+    if (duracaoEmSegundos === void 0) { duracaoEmSegundos = 1; }
     if (audio.paused) {
         audio.currentTime = 0;
         audio.play();
@@ -575,14 +575,14 @@ var GROWING;
 var animation_on = false;
 var background_color = "black";
 var sound_on = false;
-var ball_1 = new Ball("rgb(255, 255, 255)", "rgb(248, 50, 255)", 20, canvas.width / 2, canvas.height / 2, 3, 1.7, -1.5, ctx, 0.7, 20, sound_on, 0.01);
+var ball_1 = new Ball("rgb(255, 255, 255)", "rgb(248, 50, 255)", 20, canvas.width / 2, canvas.height / 2, 3, 1, -1.5, ctx, 2, 20, sound_on, 0.03);
 var uni = new Universe(ctx, canvas.width, canvas.height, background_color);
 var ball_bigger_size = 200;
-var vel = 0.07;
-var whole_flag = true;
+var vel = 0.3;
+var whole_flag = false;
 var whole_s = 9;
 var num_of_points_for_circle = 100;
-var num_of_ball = 7;
+var num_of_ball = 1;
 var begin_color = get_color_from_rgb("rgb(255, 0, 234)");
 var end_color = get_color_from_rgb("rgb(3, 228, 179)");
 for (var i = 1; i <= num_of_ball; i++) {
