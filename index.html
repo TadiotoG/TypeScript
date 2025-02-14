@@ -30,6 +30,17 @@
     #container_buttons {
         order: 1;
     }
+
+    #type_container{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .type_box{
+        width: 40px;
+        text-align: center;
+    }
 </style>
 
 <body>
@@ -42,6 +53,23 @@
         <label for="checkbox_growing">Growing Ball</label>
         <input type="checkbox" name="music" id="checkbox_music">
         <label for="checkbox_music">Music</label>
+
+
+        <div id="type_container">
+            <div>
+                <p>Quantidade de círculos</p>
+                <input type="number" id="amount_of_circles" value="1" class="type_box">
+            </div>
+            <div>
+                <p>Tamanho da bola</p>
+                <input type="number" id="ball_size" value="40" class="type_box">
+            </div>
+            <div>
+                <p>Gravidade</p>
+                <input type="number" id="gravity" value="0.2" class="type_box" step="0.1">
+            </div>
+        </div>
+        
     </div>
 
     <script src="script.js"></script>

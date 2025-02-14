@@ -694,14 +694,14 @@ var animation_on = false;
 var background_color = "black";
 var sound_on = false;
 
-var ball_1 = new Ball(`rgb(255, 255, 255)`, `rgb(248, 50, 255)`, 20, canvas.width/2, canvas.height/2, 3, 1, -1.5, ctx, 2, 20, sound_on, 0.03);
+var ball_1 = new Ball(`rgb(255, 255, 255)`, `rgb(248, 50, 255)`, 40, canvas.width/2, canvas.height/2, 3, 1, -1.5, ctx, 3, 20, sound_on, 0.03);
 let uni = new Universe(ctx, canvas.width, canvas.height, background_color);
 
-let ball_bigger_size = 200
+let ball_bigger_size = 300
 let vel = 0.3;
 let whole_flag = false;
 let whole_s = 9;
-let num_of_points_for_circle = 100;
+let num_of_points_for_circle = 120;
 let num_of_ball = 1;
 let begin_color = get_color_from_rgb("rgb(255, 0, 234)");
 let end_color = get_color_from_rgb("rgb(3, 228, 179)");
