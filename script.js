@@ -253,7 +253,7 @@ var Ball = /** @class */ (function () {
             this.ctx.beginPath();
             this.ctx.lineWidth = this.line_width;
             this.ctx.arc(this.shadow_pos_list[i].x, this.shadow_pos_list[i].y, this.radius - i, 0, Math.PI * 2, true);
-            this.ctx.fillStyle = "white";
+            this.ctx.fillStyle = this.border_color;
             this.ctx.fill();
             this.ctx.strokeStyle = this.border_color;
             this.ctx.stroke();
@@ -386,7 +386,7 @@ var Ball = /** @class */ (function () {
             else {
                 this.playSound();
             }
-            if (GROWING.checked) {
+            if (growing_on == true) {
                 this.radius += this.growing_value;
                 this.x += Math.ceil(collisionNormals[0].x * (2 * Math.ceil(this.growing_value)));
                 this.y += Math.ceil(collisionNormals[0].y * (2 * Math.ceil(this.growing_value)));
@@ -413,7 +413,7 @@ var Ball = /** @class */ (function () {
             var magnitude = Math.sqrt(Math.pow(avgNormal.x, 2) + Math.pow(avgNormal.y, 2));
             avgNormal.x /= magnitude;
             avgNormal.y /= magnitude;
-            if (GROWING.checked) {
+            if (growing_on == true) {
                 this.radius += this.growing_value;
                 this.x += Math.ceil(avgNormal.x * (2 * Math.ceil(this.growing_value)));
                 this.y += Math.ceil(avgNormal.y * (2 * Math.ceil(this.growing_value)));
@@ -461,7 +461,12 @@ var Universe = /** @class */ (function () {
             for (var x = 0; x < _this.polygons.length; x++) {
                 _this.polygons[x].draw_it(_this.ctx);
             }
-            requestAnimationFrame(_this.animate_world);
+            if (animation_on == true) {
+                requestAnimationFrame(_this.animate_world);
+            }
+            else {
+                create_world();
+            }
             // console.log("x = " + this.balls[0].x + "   y = " + this.balls[0].x)
         };
         this.ctx = ctx_out;
@@ -528,18 +533,17 @@ function get_color_from_rgb(color) {
     }
     return [Number(r_string), Number(g_string), Number(b_string)];
 }
+function get_color_from_hexa(color) {
+    var r_string = "";
+    var g_string = "";
+    var b_string = "";
+    r_string += color[1] + color[2];
+    g_string += color[3] + color[4];
+    b_string += color[5] + color[6];
+    return [parseInt(r_string, 16), parseInt(g_string, 16), parseInt(b_string, 16)];
+}
 function begin_animation() {
     animation_on = true;
-    GROWING = document.getElementById("checkbox_growing");
-    var aux;
-    aux = document.getElementById("checkbox_music");
-    if (aux.checked) {
-        sound_on = true;
-    }
-    else {
-        sound_on = false;
-    }
-    ;
     uni.animate_world();
 }
 function create_polygon() {
@@ -547,8 +551,12 @@ function create_polygon() {
     uni.append_polygon(new_p);
     dots_new_polygon = [];
 }
+function reset_world() {
+    animation_on = false;
+    get_all_configs();
+}
 var temporizador;
-var audio = new Audio("Sounds/TheWorstPythonEver.mp3");
+var audio = new Audio("Sounds/Harry_Styles_AsItWas.mp3");
 function play_music(duracaoEmSegundos) {
     if (duracaoEmSegundos === void 0) { duracaoEmSegundos = 1; }
     if (audio.paused) {
@@ -590,7 +598,7 @@ el.addEventListener("click", function (e) {
     var dot = new Dot(x, y);
     dots_new_polygon.push(dot);
 });
-var GROWING;
+var growing_on = false;
 var animation_on = false;
 var background_color = "black";
 var sound_on = false;
@@ -599,30 +607,22 @@ var y_vet = -1.5;
 var growing_value = 1.3;
 var ball_size = 10;
 var gravity = 0.02;
+var ball_color = "rgb(255, 0, 255)";
 var ball_bigger_size = 280;
 var vel = 0.24;
 var whole_flag = true;
 var whole_s = 14;
 var num_of_points_for_circle = 120;
 var amount_of_circles = 1;
-var begin_color = get_color_from_rgb("rgb(255, 0, 234)");
-var end_color = get_color_from_rgb("rgb(3, 228, 179)");
-create_animation();
-get_all_configs();
-console.log("BLALBLA");
+var begin_color = get_color_from_rgb("rgb(255, 0, 255)");
+var end_color = get_color_from_rgb("rgb(255, 0, 255)");
+var color_of_shadow = "rgb(255, 255, 255)";
 var uni = new Universe(ctx, canvas.width, canvas.height, background_color);
-var ball_1 = new Ball("rgb(255, 255, 255)", "rgb(248, 50, 255)", ball_size, canvas.width / 2, canvas.height / 2, 3, x_vet, y_vet, ctx, growing_value, 10, sound_on, gravity);
-uni = new Universe(ctx, canvas.width, canvas.height, background_color);
-ball_1 = new Ball("rgb(255, 255, 255)", "rgb(248, 50, 255)", ball_size, canvas.width / 2, canvas.height / 2, 3, x_vet, y_vet, ctx, growing_value, 10, sound_on, gravity);
-for (var i = 1; i <= amount_of_circles; i++) {
-    var static_ball = new CircleAsPolygon(canvas.width / 2, canvas.height / 2, ball_bigger_size - 15 * i, "void", whole_flag, vel * i / 200, whole_s, num_of_points_for_circle - i * 2, begin_color, end_color);
-    uni.append_circle(static_ball);
-}
-ball_1.draw_it();
-uni.append_ball(ball_1);
-function create_animation() {
+var ball_1 = new Ball(color_of_shadow, ball_color, ball_size, canvas.width / 2, canvas.height / 2, 3, x_vet, y_vet, ctx, growing_value, 10, sound_on, gravity);
+get_all_configs();
+function create_world() {
     uni = new Universe(ctx, canvas.width, canvas.height, background_color);
-    ball_1 = new Ball("rgb(255, 255, 255)", "rgb(248, 50, 255)", ball_size, canvas.width / 2, canvas.height / 2, 3, x_vet, y_vet, ctx, growing_value, 10, sound_on, gravity);
+    ball_1 = new Ball(color_of_shadow, ball_color, ball_size, canvas.width / 2, canvas.height / 2, 3, x_vet, y_vet, ctx, growing_value, 10, sound_on, gravity);
     for (var i = 1; i <= amount_of_circles; i++) {
         var static_ball = new CircleAsPolygon(canvas.width / 2, canvas.height / 2, ball_bigger_size - 15 * i, "void", whole_flag, vel * i / 200, whole_s, num_of_points_for_circle - i * 2, begin_color, end_color);
         uni.append_circle(static_ball);
@@ -630,7 +630,6 @@ function create_animation() {
     ball_1.draw_it();
     uni.append_ball(ball_1);
 }
-ball_1.draw_it();
 function get_all_configs() {
     var inputElement = document.getElementById("type_amount_of_circles");
     amount_of_circles = parseFloat(inputElement.value);
@@ -646,6 +645,14 @@ function get_all_configs() {
     vel = parseFloat(inputElement.value);
     inputElement = document.getElementById("type_size_of_wholes");
     whole_s = parseFloat(inputElement.value);
+    inputElement = document.getElementById("ball_color");
+    ball_color = inputElement.value;
+    inputElement = document.getElementById("start_color");
+    begin_color = get_color_from_hexa(inputElement.value);
+    inputElement = document.getElementById("end_color");
+    end_color = get_color_from_hexa(inputElement.value);
+    inputElement = document.getElementById("color_of_shadow");
+    color_of_shadow = inputElement.value;
     var aux;
     aux = document.getElementById("checkbox_buraco");
     if (aux.checked) {
@@ -655,5 +662,70 @@ function get_all_configs() {
         whole_flag = false;
     }
     ;
-    create_animation();
+    aux = document.getElementById("checkbox_music");
+    if (aux.checked) {
+        sound_on = true;
+    }
+    else {
+        sound_on = false;
+    }
+    ;
+    aux = document.getElementById("checkbox_growing");
+    if (aux.checked) {
+        growing_on = true;
+    }
+    else {
+        growing_on = false;
+    }
+    ;
+    create_world();
+}
+function save_config_as_file() {
+    var content = String(amount_of_circles) + "\n" + String(ball_size) + "\n" + String(gravity) + "\n" + String(growing_value) + "\n" + String(ball_bigger_size) + "\n" + String(vel) + "\n" + String(whole_s) + "\n" + String(ball_color) + "\n" + String(begin_color) + "\n" + String(end_color) + "\n" + String(color_of_shadow) + "\n" + String(whole_flag) + "\n" + String(sound_on) + "\n" + String(growing_on);
+    var blob = new Blob([content], { type: 'text/plain' });
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'Save_' + Math.ceil(100 * Math.random()) + '.txt';
+    link.click();
+    URL.revokeObjectURL(link.href); // Liberar memória
+}
+function load_config() {
+    var input_file;
+    input_file = document.createElement('input_file');
+    input_file.type = 'file';
+    input_file.addEventListener('change', load_config);
+    document.body.appendChild(input_file);
+}
+function load_config_2(event) {
+    var _a;
+    var input = event.target;
+    if (!((_a = input.files) === null || _a === void 0 ? void 0 : _a.length))
+        return;
+    var file = input.files[0];
+    var reader = new FileReader();
+    reader.onload = function () {
+        var content = reader.result;
+        var lines = content.split("\n").map(function (line) { return line.trim(); }); // Separar por linhas e remover espaços extras
+        if (lines.length < 14) {
+            console.error("Arquivo inválido!");
+            return;
+        }
+        // Atribuindo os valores lidos às variáveis
+        amount_of_circles = parseInt(lines[0]);
+        ball_size = parseFloat(lines[1]);
+        gravity = parseFloat(lines[2]);
+        growing_value = parseFloat(lines[3]);
+        ball_bigger_size = parseFloat(lines[4]);
+        vel = parseFloat(lines[5]);
+        whole_s = parseFloat(lines[6]);
+        ball_color = lines[7];
+        begin_color = get_color_from_hexa(lines[8]);
+        end_color = get_color_from_hexa(lines[9]);
+        color_of_shadow = lines[10];
+        whole_flag = lines[11] === "true"; // Converter para booleano
+        sound_on = lines[12] === "true";
+        growing_on = lines[13] === "true";
+    };
+    reader.readAsText(file);
+    get_all_configs();
 }

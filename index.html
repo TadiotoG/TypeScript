@@ -21,6 +21,12 @@
         align-items: center;
     }
 
+    #div_buttons_01 {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+    }
+
     #container > #controles {
         background-color: white;
         margin: 20px;
@@ -45,16 +51,15 @@
         text-align: center;
     }
 
-    #div_buttons {
+    .div_buttons {
         margin: 20px;
     }
 
-    #div_buttons > *{
+    .div_buttons > *{
         margin: 10px;
     }
 
     .div_checkbox > * {
-        
         margin: 10px;
     }
 
@@ -96,6 +101,28 @@
                 </div>
             </div>
 
+            <div class="div_checkbox">
+                <div>
+                    <input oninput=get_all_configs() type="color" name="color_b" id="start_color" value="#FF00FF">
+                    <label for="start_color">Cor do começo</label>
+                </div>
+                <div>
+                    <input oninput=get_all_configs() type="color" name="color_e" id="end_color" value="#0000FF">
+                    <label for="end_color">Cor do fim</label>
+                </div>
+            </div>
+
+            <div class="div_checkbox">
+                <div>
+                    <input oninput=get_all_configs() type="color" name="color_ball" id="ball_color" value="#FA00FF">
+                    <label for="ball_color">Cor da bola</label>
+                </div>
+                <div>
+                    <input oninput=get_all_configs() type="color" name="color_of_shadow" id="color_of_shadow" value="#FFFFFF">
+                    <label for="color_of_shadow">Cor do rastro</label>
+                </div>
+            </div>
+
             <div id="type_divs">
                 <div class="type_container">
                     <div>
@@ -131,9 +158,14 @@
                 </div>
             </div>
 
-            <div id= "div_buttons">
-                <button onclick="begin_animation()" class="buttons" id="b_02">Comecar</button>
-                <button onclick="create_polygon()" class="buttons" id="b_01">Criar poligono</button>
+            <div class= "div_buttons" id="div_buttons_01">
+                <button onclick="begin_animation()" class="buttons" id="b_01">Comecar</button>
+                <button onclick="reset_world()" class="buttons" id="b_02">Reset</button>
+            </div>
+
+            <div class = "div_buttons">
+                <button onclick="save_config_as_file()" class="buttons" id="b_03">Salvar configurações</button>
+                <button onclick="load_config()" class="buttons" id="b_04">Carregar configurações</button>
             </div>
 
         </div>
