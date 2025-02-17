@@ -14,17 +14,22 @@
         align-items: center;
     }
 
-    body > #container{
+    header > h1 {
+        font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        font-size: 2em;
+        text-shadow: 3px 3px 10px black;
+    }
+
+    #canvas-giratorio {
+        border-radius: 20px;
+        border-style: solid;
+    }
+
+    #container{
         display: flex;
         justify-content: center;
         flex-direction: row;
         align-items: center;
-    }
-
-    #div_buttons_01 {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-around;
     }
 
     #container > #controles {
@@ -34,29 +39,21 @@
         border-radius: 20px;
         border-style: solid;
         order: 1;
+        max-width: 1000px;
+        max-height: 700px;
     }
 
     #container > * {
         font-size: 15px;
     }
 
-    #type_container{
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+    .type_container > *{
+        margin: 20px;
     }
 
     .type_box{
         width: 40px;
         text-align: center;
-    }
-
-    .div_buttons {
-        margin: 20px;
-    }
-
-    .div_buttons > *{
-        margin: 10px;
     }
 
     .div_checkbox > * {
@@ -66,6 +63,7 @@
     .div_checkbox {
         display: flex;
         flex-direction: row;
+        justify-content: space-around;
     }
 
     #type_divs{
@@ -74,9 +72,6 @@
         justify-content: space-around;
     }
 
-    #type_divs > * {
-        margin: 10px;
-    }
 
 </style>
 <header>
@@ -101,30 +96,16 @@
                 </div>
             </div>
 
-            <div class="div_checkbox">
-                <div>
-                    <input oninput=get_all_configs() type="color" name="color_b" id="start_color" value="#FF00FF">
-                    <label for="start_color">Cor do começo</label>
-                </div>
-                <div>
-                    <input oninput=get_all_configs() type="color" name="color_e" id="end_color" value="#0000FF">
-                    <label for="end_color">Cor do fim</label>
-                </div>
-            </div>
-
-            <div class="div_checkbox">
-                <div>
-                    <input oninput=get_all_configs() type="color" name="color_ball" id="ball_color" value="#FA00FF">
-                    <label for="ball_color">Cor da bola</label>
-                </div>
-                <div>
-                    <input oninput=get_all_configs() type="color" name="color_of_shadow" id="color_of_shadow" value="#FFFFFF">
-                    <label for="color_of_shadow">Cor do rastro</label>
-                </div>
-            </div>
-
             <div id="type_divs">
                 <div class="type_container">
+                    <div>
+                        <input oninput=get_all_configs() type="color" name="color_ball" id="ball_color" value="#FA00FF">
+                        <label for="ball_color">Cor da bola</label>
+                    </div>
+                    <div>
+                        <input oninput=get_all_configs() type="color" name="color_b" id="start_color" value="#FF00FF">
+                        <label for="start_color">Cor do começo</label>
+                    </div>
                     <div>
                         <p>Quantidade de círculos</p>
                         <input oninput=get_all_configs() type="number" id="type_amount_of_circles" value="1" class="type_box">
@@ -141,8 +122,21 @@
                         <p>Quanto a bola cresce</p>
                         <input oninput=get_all_configs() type="number" id="type_growing_value" value="1.3" class="type_box" step="0.1">
                     </div>
+
+                    <div><button onclick="begin_animation()" class="buttons" id="b_01">Comecar</button></div>
+
+                    <div><button onclick="save_config_as_file()" class="buttons" id="b_03">Salvar configurações</button></div>
                 </div>
+                
                 <div class="type_container">
+                    <div>
+                        <input oninput=get_all_configs() type="color" name="color_of_shadow" id="color_of_shadow" value="#FFFFFF">
+                        <label for="color_of_shadow">Cor do rastro</label>
+                    </div>
+                    <div>
+                        <input oninput=get_all_configs() type="color" name="color_e" id="end_color" value="#0000FF">
+                        <label for="end_color">Cor do fim</label>
+                    </div>
                     <div>
                         <p>Tamanho do maior circulo</p>
                         <input oninput=get_all_configs() type="number" id="type_circle_size" value="150" class="type_box">
@@ -155,19 +149,15 @@
                         <p>Tamanho dos buracos</p>
                         <input oninput=get_all_configs() type="number" id="type_size_of_wholes" value="8" class="type_box">
                     </div>
+                    <div>
+                        <p>Espaçamento entre os circulos</p>
+                        <input oninput=get_all_configs() type="number" id="space_between_circles" value="15" class="type_box">
+                    </div>
+                    <div><button onclick="reset_world()" class="buttons" id="b_02">Reset</button></div>
+
+                    <div><button onclick="load_config()" class="buttons" id="b_04">Carregar configurações</button></div>
                 </div>
             </div>
-
-            <div class= "div_buttons" id="div_buttons_01">
-                <button onclick="begin_animation()" class="buttons" id="b_01">Comecar</button>
-                <button onclick="reset_world()" class="buttons" id="b_02">Reset</button>
-            </div>
-
-            <div class = "div_buttons">
-                <button onclick="save_config_as_file()" class="buttons" id="b_03">Salvar configurações</button>
-                <button onclick="load_config()" class="buttons" id="b_04">Carregar configurações</button>
-            </div>
-
         </div>
     </div>
 
