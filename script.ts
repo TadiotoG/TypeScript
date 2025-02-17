@@ -532,6 +532,45 @@ class Ball {
 	}
 }
 
+class Particle {
+	x: number;
+	y: number;
+	vx: number;
+	vy: number;
+	alpha: number;
+  
+	constructor(x: number, y: number) {
+	  this.x = x;
+	  this.y = y;
+	  this.vx = (Math.random() - 0.5) * 4;
+	  this.vy = (Math.random() - 0.5) * 4;
+	  this.alpha = 1;
+	}
+  
+	update() {
+	  this.x += this.vx;
+	  this.y += this.vy;
+	  this.alpha -= 0.02;
+	}
+  
+	draw(context: CanvasRenderingContext2D) {
+	  context.globalAlpha = this.alpha;
+	  context.fillStyle = "white";
+	  context.beginPath();
+	  context.arc(this.x, this.y, 2, 0, Math.PI * 2);
+	  context.fill();
+	  context.globalAlpha = 1;
+	}
+  }
+  
+  let particles: Particle[] = [];
+  
+  function explodePolygon(x: number, y: number) {
+	for (let i = 0; i < 20; i++) { // 20 partículas por explosão
+	  particles.push(new Particle(x, y));
+	}
+  }
+
 class Universe {
 	balls: Array<Ball>;
 	ctx: CanvasRenderingContext2D;
@@ -588,39 +627,47 @@ class Universe {
 	animate_world = () => {
 		this.ctx.fillStyle = this.back_color;
 		this.ctx.fillRect(0, 0, canvas.width, canvas.height);
+		
 		for(let i = 0; i < this.balls.length; i++){
-			for(let j = 0; j < this.polygons.length; j++){
-				this.balls[i].verify_all_walls(this.polygons[j].dots)   
-				}
-
-			for(let x = 0; x < this.circles.length; x++){
-				
-				this.balls[i].verify_all_walls(this.circles[x].dots, this.circles[x].whole)
-				this.circles[x].draw_it(this.ctx);
-				this.circles[x].rotate();
-				let dist_MidBigBall2SmallBall = distance(new Dot(this.circles[x].x_pos, this.circles[x].y_pos), new Dot(this.balls[i].x, this.balls[i].y))
-				if(dist_MidBigBall2SmallBall > (this.circles[x].rad - this.balls[i].radius*0.9)){// Se a distancia do centro da bola maior, até a bolinha for maior do que seu raio + o raio da bolinha, ela esta fora
-					if(this.pop_sound != "void"){
-						this.playPopSound();
-					}
-					this.circles.pop();
-				}
+		  for(let j = 0; j < this.polygons.length; j++){
+			this.balls[i].verify_all_walls(this.polygons[j].dots);   
+		  }
+	  
+		  for(let x = 0; x < this.circles.length; x++){
+			this.balls[i].verify_all_walls(this.circles[x].dots, this.circles[x].whole);
+			this.circles[x].draw_it(this.ctx);
+			this.circles[x].rotate();
+			let dist_MidBigBall2SmallBall = distance(new Dot(this.circles[x].x_pos, this.circles[x].y_pos), new Dot(this.balls[i].x, this.balls[i].y));
+			if(dist_MidBigBall2SmallBall > (this.circles[x].rad - this.balls[i].radius * 0.9)) {
+			  if(this.pop_sound != "void") {
+				this.playPopSound();
+			  }
+			  explodePolygon(this.circles[x].x_pos, this.circles[x].y_pos);
+			  this.circles.pop();
 			}
-				this.balls[i].update_position()
-			}
-		for(let x = 0; x < this.polygons.length; x++){
-			this.polygons[x].draw_it(this.ctx);
-			}
-
-		if(animation_on == true){
-			requestAnimationFrame(this.animate_world);
-		} else {
-			create_world();
+		  }
+		  this.balls[i].update_position();
 		}
-		// console.log("x = " + this.balls[0].x + "   y = " + this.balls[0].x)
+		
+		for(let x = 0; x < this.polygons.length; x++){
+		  this.polygons[x].draw_it(this.ctx);
+		}
+		
+		particles.forEach((particle, index) => {
+		  particle.update();
+		  particle.draw(this.ctx);
+		  if (particle.alpha <= 0) {
+			particles.splice(index, 1);
+		  }
+		});
+	  
+		if(animation_on == true){
+		  requestAnimationFrame(this.animate_world);
+		} else {
+		  create_world();
+		}
+	  }
 	}
-}
-
 function get_color_from_rgb(color: string){
 	let r_string: string = "";
 	let g_string: string = "";
