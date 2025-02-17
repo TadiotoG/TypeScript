@@ -436,6 +436,35 @@ var Ball = /** @class */ (function () {
     };
     return Ball;
 }());
+var Particle = /** @class */ (function () {
+    function Particle(x, y) {
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 4;
+        this.vy = (Math.random() - 0.5) * 4;
+        this.alpha = 1;
+    }
+    Particle.prototype.update = function () {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.alpha -= 0.02;
+    };
+    Particle.prototype.draw = function (context) {
+        context.globalAlpha = this.alpha;
+        context.fillStyle = "white";
+        context.beginPath();
+        context.arc(this.x, this.y, 2, 0, Math.PI * 2);
+        context.fill();
+        context.globalAlpha = 1;
+    };
+    return Particle;
+}());
+var particles = [];
+function explodePolygon(x, y) {
+    for (var i = 0; i < 20; i++) { // 20 partículas por explosão
+        particles.push(new Particle(x, y));
+    }
+}
 var Universe = /** @class */ (function () {
     function Universe(ctx_out, width_limit, height_limit, background_color, pop_sound) {
         if (pop_sound === void 0) { pop_sound = "void"; }
@@ -452,10 +481,11 @@ var Universe = /** @class */ (function () {
                     _this.circles[x].draw_it(_this.ctx);
                     _this.circles[x].rotate();
                     var dist_MidBigBall2SmallBall = distance(new Dot(_this.circles[x].x_pos, _this.circles[x].y_pos), new Dot(_this.balls[i].x, _this.balls[i].y));
-                    if (dist_MidBigBall2SmallBall > (_this.circles[x].rad - _this.balls[i].radius * 0.9)) { // Se a distancia do centro da bola maior, até a bolinha for maior do que seu raio + o raio da bolinha, ela esta fora
+                    if (dist_MidBigBall2SmallBall > (_this.circles[x].rad - _this.balls[i].radius * 0.9)) {
                         if (_this.pop_sound != "void") {
                             _this.playPopSound();
                         }
+                        explodePolygon(_this.circles[x].x_pos, _this.circles[x].y_pos);
                         _this.circles.pop();
                     }
                 }
@@ -464,13 +494,19 @@ var Universe = /** @class */ (function () {
             for (var x = 0; x < _this.polygons.length; x++) {
                 _this.polygons[x].draw_it(_this.ctx);
             }
+            particles.forEach(function (particle, index) {
+                particle.update();
+                particle.draw(_this.ctx);
+                if (particle.alpha <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
             if (animation_on == true) {
                 requestAnimationFrame(_this.animate_world);
             }
             else {
                 create_world();
             }
-            // console.log("x = " + this.balls[0].x + "   y = " + this.balls[0].x)
         };
         this.ctx = ctx_out;
         this.balls = [];
