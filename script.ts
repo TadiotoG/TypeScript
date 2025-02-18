@@ -88,7 +88,7 @@ class CircleAsPolygon{
 
 	rotate(){
 		if(this.whole){
-			let fix_problem = 0.01;
+			let fix_problem = 0.25;
 	
 			this.dots[this.dots.length-2].x = this.x_pos + (this.rad-fix_problem) * Math.cos(this.thetas_list[this.thetas_list.length-1] + this.velocity);
 			this.dots[this.dots.length-2].y = this.y_pos + (this.rad-fix_problem) * Math.sin(this.thetas_list[this.thetas_list.length-1] + this.velocity);
@@ -119,7 +119,7 @@ class CircleAsPolygon{
 
 	getDots(){
 		let points = []; 
-		let fix_problem = 0.01;
+		let fix_problem = 0.25;
 
 		if(this.whole){
 			let x_0 = this.x_pos + (this.rad-fix_problem) * Math.cos(this.thetas_list[0]);
@@ -621,6 +621,7 @@ class Universe {
 
 	playPopSound() {
 		let sound = new Audio("Sounds/" + this.pop_sound)
+		sound.volume = 0.6;
 		sound.play().catch(error => console.error("Erro ao tocar som:", error));
 	}
 
@@ -640,7 +641,8 @@ class Universe {
 			let dist_MidBigBall2SmallBall = distance(new Dot(this.circles[x].x_pos, this.circles[x].y_pos), new Dot(this.balls[i].x, this.balls[i].y));
 			
 			// if(dist_MidBigBall2SmallBall > (this.circles[x].rad - distance(new Dot(this.balls[i].vet_x, this.balls[i].vet_y), new Dot(0,0))))
-			if(dist_MidBigBall2SmallBall > (this.circles[x].rad - this.balls[i].radius * 0.9)) {
+			// se a distancia do meio do circulo ate o meio da bola for maior do que o raio do circulo menos n% o raio da bola
+			if(dist_MidBigBall2SmallBall > (this.circles[x].rad - Math.floor(this.balls[i].radius * 0.9)) + distance(new Dot(this.balls[i].vet_x, this.balls[i].vet_y), new Dot(0,0))) {
 			  if(this.pop_sound != "void") {
 				this.playPopSound();
 			  }
@@ -716,7 +718,6 @@ function get_hexa_from_list(list: number[]){
 		}
 		string += aux;
 	}
-	console.log("O que temos aqui " + string)
 	return string;
 }
 
@@ -748,7 +749,7 @@ function play_music(duracaoEmSegundos: number = 1) {
 }
 
 function create_world(){
-	uni = new Universe(ctx, canvas.width, canvas.height, background_color);
+	uni = new Universe(ctx, canvas.width, canvas.height, background_color, "Neh.mp3");
 	ball_1 = new Ball(color_of_shadow, ball_color, ball_size, canvas.width/2, canvas.height/2, 3, x_vet, y_vet, ctx, growing_value, 10, sound_on, gravity);
 
 	for(let i=1; i <= amount_of_circles; i++){
@@ -969,8 +970,8 @@ var growing_on = false;
 var animation_on = false;
 var background_color = "black";
 var sound_on = false;
-var x_vet = 0;
-var y_vet = -3;
+var x_vet = -1;
+var y_vet = -1;
 var growing_value = 1.3;
 var ball_size = 10;
 var gravity = 0.02;
@@ -987,7 +988,7 @@ var end_color = get_color_from_rgb("rgb(255, 0, 255)");
 var color_of_shadow = "rgb(255, 255, 255)";
 var space_between_circles = 15;
 
-var uni = new Universe(ctx, canvas.width, canvas.height, background_color);
+var uni = new Universe(ctx, canvas.width, canvas.height, background_color, "Neh.mp3");
 var ball_1 = new Ball(color_of_shadow, ball_color, ball_size, canvas.width/2, canvas.height/2, 3, x_vet, y_vet, ctx, growing_value, 10, sound_on, gravity);
 
 get_all_configs();
