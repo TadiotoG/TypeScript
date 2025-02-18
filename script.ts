@@ -539,17 +539,17 @@ class Particle {
 	vy: number;
 	alpha: number;
   
-	constructor(x: number, y: number) {
+	constructor(x: number, y: number, origin_x: number, origin_y: number) {
 	  this.x = x;
 	  this.y = y;
-	  this.vx = (Math.random() - 0.5) * 4;
-	  this.vy = (Math.random() - 0.5) * 4;
+	  this.vx = (Math.random()*(x - origin_x))/10;
+	  this.vy = (Math.random()*(y - origin_y))/10;
 	  this.alpha = 1;
 	}
   
 	update() {
-	  this.x += this.vx;
-	  this.y += this.vy;
+	  this.x += Math.ceil(Math.random()*this.vx);
+	  this.y += Math.ceil(Math.random()*this.vy);
 	  this.alpha -= 0.02;
 	}
   
@@ -565,9 +565,9 @@ class Particle {
   
   let particles: Particle[] = [];
   
-  function explodePolygon(x: number, y: number) {
-	for (let i = 0; i < 20; i++) { // 20 partículas por explosão
-	  particles.push(new Particle(x, y));
+  function explodePolygon(x: number, y: number, or_x: number, or_y: number) {
+	for (let i = 0; i < 1; i++) { // partículas por explosão
+	  particles.push(new Particle(x, y, or_x, or_y));
 	}
   }
 
@@ -638,11 +638,17 @@ class Universe {
 			this.circles[x].draw_it(this.ctx);
 			this.circles[x].rotate();
 			let dist_MidBigBall2SmallBall = distance(new Dot(this.circles[x].x_pos, this.circles[x].y_pos), new Dot(this.balls[i].x, this.balls[i].y));
+			
+			// if(dist_MidBigBall2SmallBall > (this.circles[x].rad - distance(new Dot(this.balls[i].vet_x, this.balls[i].vet_y), new Dot(0,0))))
 			if(dist_MidBigBall2SmallBall > (this.circles[x].rad - this.balls[i].radius * 0.9)) {
 			  if(this.pop_sound != "void") {
 				this.playPopSound();
 			  }
-			  explodePolygon(this.circles[x].x_pos, this.circles[x].y_pos);
+			  let orig_x = this.circles[x].x_pos;
+			  let orig_y = this.circles[x].y_pos;
+			  for(let edge=0; edge < this.circles[x].dots.length; edge++){
+				explodePolygon(this.circles[x].dots[edge].x, this.circles[x].dots[edge].y, orig_x, orig_y);
+			  }
 			  this.circles.pop();
 			}
 		  }
@@ -963,8 +969,8 @@ var growing_on = false;
 var animation_on = false;
 var background_color = "black";
 var sound_on = false;
-var x_vet = 1;
-var y_vet = -1.5;
+var x_vet = 0;
+var y_vet = -3;
 var growing_value = 1.3;
 var ball_size = 10;
 var gravity = 0.02;

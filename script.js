@@ -437,16 +437,16 @@ var Ball = /** @class */ (function () {
     return Ball;
 }());
 var Particle = /** @class */ (function () {
-    function Particle(x, y) {
+    function Particle(x, y, origin_x, origin_y) {
         this.x = x;
         this.y = y;
-        this.vx = (Math.random() - 0.5) * 4;
-        this.vy = (Math.random() - 0.5) * 4;
+        this.vx = (Math.random() * (x - origin_x)) / 10;
+        this.vy = (Math.random() * (y - origin_y)) / 10;
         this.alpha = 1;
     }
     Particle.prototype.update = function () {
-        this.x += this.vx;
-        this.y += this.vy;
+        this.x += Math.ceil(Math.random() * this.vx);
+        this.y += Math.ceil(Math.random() * this.vy);
         this.alpha -= 0.02;
     };
     Particle.prototype.draw = function (context) {
@@ -460,9 +460,9 @@ var Particle = /** @class */ (function () {
     return Particle;
 }());
 var particles = [];
-function explodePolygon(x, y) {
-    for (var i = 0; i < 20; i++) { // 20 partículas por explosão
-        particles.push(new Particle(x, y));
+function explodePolygon(x, y, or_x, or_y) {
+    for (var i = 0; i < 1; i++) { // partículas por explosão
+        particles.push(new Particle(x, y, or_x, or_y));
     }
 }
 var Universe = /** @class */ (function () {
@@ -485,7 +485,11 @@ var Universe = /** @class */ (function () {
                         if (_this.pop_sound != "void") {
                             _this.playPopSound();
                         }
-                        explodePolygon(_this.circles[x].x_pos, _this.circles[x].y_pos);
+                        var orig_x = _this.circles[x].x_pos;
+                        var orig_y = _this.circles[x].y_pos;
+                        for (var edge = 0; edge < _this.circles[x].dots.length; edge++) {
+                            explodePolygon(_this.circles[x].dots[edge].x, _this.circles[x].dots[edge].y, orig_x, orig_y);
+                        }
                         _this.circles.pop();
                     }
                 }
@@ -805,8 +809,8 @@ var growing_on = false;
 var animation_on = false;
 var background_color = "black";
 var sound_on = false;
-var x_vet = 1;
-var y_vet = -1.5;
+var x_vet = 0;
+var y_vet = -3;
 var growing_value = 1.3;
 var ball_size = 10;
 var gravity = 0.02;
